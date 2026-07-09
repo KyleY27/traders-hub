@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traders Hub V2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#161B27;--s1:#1C2333;--s2:#232C40;--s3:#2A3550;
+  --border:#2E3D58;--border2:#384A6A;
+  --text:#F0EEE9;--text2:#C4CEDF;--muted:#8090A8;--dim:#506070;
+  --accent:#5B8AF0;--accent-d:#4070D8;--accent-bg:rgba(91,138,240,0.10);
+  --green:#2ECC8E;--green-bg:rgba(46,204,142,0.10);
+  --red:#E05555;--red-bg:rgba(224,85,85,0.10);
+  --amber:#D4A843;--amber-bg:rgba(212,168,67,0.10);
+  --mono:'IBM Plex Mono',monospace;--sans:'Inter',sans-serif;
+  --r:6px;--rl:10px;
+}
+*{scrollbar-width:thin;scrollbar-color:var(--border2) var(--s1)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;min-height:100vh}
+
+/* ── TOPBAR ── */
+.topbar{height:54px;background:var(--s1);border-bottom:2px solid var(--border);display:flex;align-items:center;position:sticky;top:0;z-index:300}
+.topbar-brand{display:flex;align-items:center;gap:10px;padding:0 1.25rem;height:100%;border-right:1px solid var(--border);min-width:180px}
+.brand-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),#8B5CF6);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.brand-label{font-size:14px;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.brand-v{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.1em;margin-top:1px}
+.topbar-nav{display:flex;height:100%;flex:1;overflow-x:auto}
+.tnav{display:flex;align-items:center;gap:6px;padding:0 1.1rem;height:100%;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;border-right:1px solid var(--border);user-select:none;letter-spacing:.01em}
+.tnav i{font-size:15px}
+.tnav:hover{color:var(--text2);background:var(--s2)}
+.tnav.active{color:var(--text);border-bottom-color:var(--accent);background:var(--accent-bg)}
+.topbar-right{display:flex;align-items:center;gap:6px;padding:0 1rem;margin-left:auto;border-left:1px solid var(--border)}
+.tb-btn{background:none;border:1px solid var(--border2);border-radius:var(--r);color:var(--muted);font-family:var(--mono);font-size:10px;padding:5px 10px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.tb-btn:hover{color:var(--text);border-color:var(--muted)}
+.tb-btn.danger:hover{color:var(--red);border-color:var(--red)}
+
+/* ── PAGES ── */
+.page{display:none;padding:1.5rem;max-width:1600px;margin:0 auto;animation:fadeIn .15s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ── GRID ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem}
+@media(max-width:1100px){.g4{grid-template-columns:1fr 1fr}.g5{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:768px){.g2,.g3,.g4,.g5{grid-template-columns:1fr}}
+
+/* ── CARDS ── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.125rem;border-bottom:1px solid var(--border);background:var(--s2);gap:.75rem;flex-wrap:wrap}
+.card-title{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.07em;text-transform:uppercase}
+.card-body{padding:1.125rem}
+.mb{margin-bottom:1rem}
+
+/* ── STATS ── */
+.stat{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);padding:1rem 1.125rem}
+.stat-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:6px}
+.stat-val{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--text);line-height:1;margin-bottom:4px}
+.stat-sub{font-family:var(--mono);font-size:11px;color:var(--text2)}
+.stat.pos .stat-val{color:var(--green)}
+.stat.neg .stat-val{color:var(--red)}
+.stat.acc .stat-val{color:var(--accent)}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;gap:.75rem;flex-wrap:wrap}
+.sh-title{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.sh-sub{font-size:12px;color:var(--muted);margin-top:3px}
+
+/* ── FORMS ── */
+.form-row{display:grid;gap:.75rem;margin-bottom:.75rem}
+.fc{display:flex;flex-direction:column;gap:5px}
+.fc label,.flabel{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase}
+input,select,textarea{background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 11px;width:100%;transition:border-color .15s;outline:none;line-height:1.4}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--s1)}
+input::placeholder,textarea::placeholder{color:var(--dim);font-style:italic}
+select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23506070' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:26px}
+textarea{resize:vertical;min-height:80px}
+.im{font-family:var(--mono)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid var(--border2);background:none;color:var(--muted);white-space:nowrap;letter-spacing:.01em}
+.btn:hover{color:var(--text);border-color:var(--muted)}
+.btn-p{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-p:hover{background:var(--accent-d);border-color:var(--accent-d)}
+.btn-g{border:1px dashed var(--border2);color:var(--dim);width:100%;justify-content:center;padding:10px}
+.btn-g:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.btn-d{border-color:rgba(224,85,85,.3);color:var(--red)}
+.btn-d:hover{background:var(--red-bg);border-color:var(--red)}
+.btn-s{background:var(--green);border-color:var(--green);color:#0d1117;font-weight:700}
+.btn-s:hover{opacity:.9}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-xs{padding:3px 7px;font-size:10px}
+
+/* ── TAGS ── */
+.tag{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px;letter-spacing:.05em;white-space:nowrap;font-family:var(--mono)}
+.tl{background:var(--green-bg);color:var(--green);border:1px solid rgba(46,204,142,.25)}
+.ts{background:var(--red-bg);color:var(--red);border:1px solid rgba(224,85,85,.25)}
+.tw{background:var(--green-bg);color:var(--green);border:1px solid rgba(46,204,142,.25)}
+.tlo{background:var(--red-bg);color:var(--red);border:1px solid rgba(224,85,85,.25)}
+.tb2{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(212,168,67,.25)}
+.to{background:var(--accent-bg);color:var(--accent);border:1px solid rgba(91,138,240,.25)}
+.tsa{background:var(--green-bg);color:var(--green);border:1px solid rgba(46,204,142,.25)}
+.tst{background:var(--accent-bg);color:var(--accent);border:1px solid rgba(91,138,240,.25)}
+.tsr{background:var(--red-bg);color:var(--red);border:1px solid rgba(224,85,85,.25)}
+.tsu{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(212,168,67,.25)}
+.pp{color:var(--green);font-family:var(--mono);font-size:13px;font-weight:700}
+.pn{color:var(--red);font-family:var(--mono);font-size:13px;font-weight:700}
+.pb{color:var(--amber);font-family:var(--mono);font-size:13px;font-weight:700}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:10px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase;text-align:left;padding:9px 13px;border-bottom:2px solid var(--border2);white-space:nowrap;font-weight:700;background:var(--s2)}
+td{padding:10px 13px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle;font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(91,138,240,.05);cursor:pointer}
+td.tb{color:var(--text);font-weight:700}
+td.tm{font-family:var(--mono);font-size:12px;color:var(--text2)}
+
+/* ── MODALS ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto}
+.modal-bg.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--border2);border-radius:var(--rl);width:100%;overflow:hidden;margin:auto}
+.msm{max-width:500px}.mmd{max-width:700px}.mlg{max-width:880px}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border);background:var(--s2)}
+.modal-title{font-size:14px;font-weight:700;color:var(--text)}
+.modal-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:22px;line-height:1;transition:color .15s;padding:0}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:1.25rem}
+.modal-foot{padding:1rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.625rem;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+
+/* ── FILTER BAR ── */
+.fbar{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;margin-bottom:1rem}
+.fbar input,.fbar select{width:auto;padding:7px 10px;font-size:12px}
+.fbar select{padding-right:24px}
+.fbar input[type=text],.fbar input[type=date]{min-width:140px;flex:1}
+
+/* ── LIVE TRADES ── */
+.lt-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:1rem;overflow:hidden}
+.lt-hd{padding:.875rem 1.125rem;background:var(--s2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+.lt-asset{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text)}
+.lt-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lt-lv{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.lt-lv span{color:var(--text2);font-weight:600}
+.lt-body{padding:1.125rem}
+.lt-act{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.lt-thesis{background:var(--s2);border-left:3px solid var(--accent);border-radius:0 var(--r) var(--r) 0;padding:.875rem 1rem;margin-bottom:.875rem;font-size:13px;line-height:1.65;color:var(--text)}
+.tline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:grid;grid-template-columns:90px 1fr auto;gap:.75rem;padding:.625rem 0;border-bottom:1px solid var(--border)}
+.tl-item:last-child{border-bottom:none}
+.tl-ts{font-family:var(--mono);font-size:10px;color:var(--dim);padding-top:2px;line-height:1.4}
+.tl-txt{font-size:13px;color:var(--text2);line-height:1.5}
+.add-note{display:flex;gap:.5rem;align-items:flex-start;margin-top:.875rem;padding-top:.875rem;border-top:1px solid var(--border)}
+
+/* ── ANALYSIS / ACCORDION ── */
+.an-entry{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:.75rem;overflow:hidden}
+.an-hd{padding:.875rem 1.125rem;background:var(--s2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:.75rem;cursor:pointer;user-select:none;transition:background .12s}
+.an-hd:hover{background:var(--s3)}
+.an-body{padding:1.125rem;display:none}
+.an-body.open{display:block}
+.an-imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.625rem;margin-top:.625rem}
+.an-img{width:100%;border-radius:var(--r);border:1px solid var(--border);cursor:zoom-in;aspect-ratio:16/9;object-fit:cover;transition:opacity .15s}
+.an-img:hover{opacity:.85}
+.an-img-add{width:100%;aspect-ratio:16/9;border:1px dashed var(--border2);border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--dim);font-size:11px;cursor:pointer;transition:all .15s;gap:5px}
+.an-img-add:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.img-wrap{position:relative}
+.img-del{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.75);border:1px solid var(--border2);color:#fff;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;z-index:2}
+.img-del:hover{background:var(--red);border-color:var(--red)}
+
+/* ── SYSTEMS ── */
+.sys-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:1rem;overflow:hidden}
+.sys-hd{padding:.875rem 1.125rem;background:var(--s2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;cursor:pointer;user-select:none}
+.sys-hd:hover{background:var(--s3)}
+.sys-name{font-size:15px;font-weight:700;color:var(--text)}
+.sys-body{padding:1.125rem}
+.rules-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.rules-list li{display:flex;gap:10px;padding:8px 12px;background:var(--s2);border-radius:var(--r);font-size:13px;color:var(--text2);border:1px solid var(--border)}
+.rule-n{font-family:var(--mono);font-size:10px;color:var(--dim);min-width:20px;padding-top:2px}
+.sys-stats{display:flex;gap:2rem;flex-wrap:wrap;padding:.875rem 1.125rem;border-top:1px solid var(--border);background:var(--bg)}
+.ss-label{font-size:9px;font-weight:700;color:var(--dim);letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px}
+.ss-val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text)}
+
+/* ── TARGETS ── */
+.target-section{margin-bottom:1rem}
+.ts-hdr{display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;user-select:none;transition:all .15s;margin-bottom:0}
+.ts-hdr:hover{border-color:var(--accent);background:var(--s3)}
+.ts-hdr.pinned{border-color:var(--amber);background:var(--amber-bg)}
+.ts-name{font-size:13px;font-weight:700;color:var(--text)}
+.ts-prog{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.ts-body{background:var(--s1);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--rl) var(--rl);padding:1rem;margin-top:-1px;display:none}
+.ts-body.open{display:block}
+.ts-actions{display:flex;gap:.5rem;align-items:center;margin-bottom:.875rem;flex-wrap:wrap}
+.todo-item{display:flex;align-items:flex-start;gap:10px;padding:.75rem;background:var(--s2);border-radius:var(--r);margin-bottom:.5rem;border:1px solid transparent;transition:all .15s}
+.todo-item:hover{border-color:var(--border)}
+.todo-item.done{opacity:.55}
+.todo-item.done .todo-label{text-decoration:line-through;color:var(--dim)}
+.todo-cb{width:18px;height:18px;min-width:18px;border:2px solid var(--border2);border-radius:4px;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-top:2px}
+.todo-cb:hover{border-color:var(--accent)}
+.todo-cb.checked{background:var(--green);border-color:var(--green)}
+.todo-cb.checked::after{content:'✓';color:#fff;font-size:11px;font-weight:800}
+.todo-label{flex:1;font-size:13px;color:var(--text);line-height:1.45;cursor:text}
+.todo-label[contenteditable=true]{outline:none;border-bottom:1px dashed var(--accent);padding-bottom:1px}
+.todo-drag{color:var(--dim);cursor:grab;font-size:16px;margin-top:1px;padding:0 2px}
+.todo-drag:active{cursor:grabbing}
+.todo-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:14px;padding:2px;transition:color .15s;flex-shrink:0}
+.todo-del:hover{color:var(--red)}
+.tprog-track{height:4px;background:var(--border2);border-radius:2px;overflow:hidden;flex:1;min-width:60px}
+.tprog-fill{height:100%;background:var(--accent);transition:width .3s}
+
+/* ── DV VALUES ── */
+.dv-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:5px}
+.dv-val{background:var(--s2);border-radius:var(--r);padding:.75rem 1rem;font-size:13px;color:var(--text2);line-height:1.6;border-left:2px solid var(--border2)}
+.dv-val.al{border-left-color:var(--accent)}
+.dv-val.gl{border-left-color:var(--green)}
+.dv-val.rl{border-left-color:var(--red)}
+
+/* ── MISC ── */
+.subtabs{display:flex;gap:2px;margin-bottom:1rem;background:var(--s2);border-radius:var(--r);padding:3px;border:1px solid var(--border);width:fit-content}
+.subtab{padding:6px 16px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:5px;transition:all .15s;user-select:none;white-space:nowrap}
+.subtab.active{background:var(--s1);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.cw{position:relative;height:200px}
+.cws{position:relative;height:160px}
+.empty{text-align:center;padding:3rem 1rem;color:var(--dim)}
+.empty i{font-size:32px;display:block;margin-bottom:.75rem;opacity:.45}
+.empty p{font-size:13px;line-height:1.6;color:var(--muted)}
+.divider{height:1px;background:var(--border);margin:.875rem 0}
+.toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rl);padding:.875rem 1.125rem;font-size:13px;color:var(--text);z-index:999;box-shadow:0 4px 24px rgba(0,0,0,.5);display:none;align-items:center;gap:.625rem;max-width:320px;font-weight:500}
+.toast.show{display:flex;animation:tsl .2s ease}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+@keyframes tsl{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:600;align-items:center;justify-content:center;cursor:zoom-out}
+.lightbox.open{display:flex}
+.lightbox img{max-width:92vw;max-height:88vh;border-radius:var(--r)}
+.dash-lt{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);padding:.875rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;cursor:pointer;transition:border-color .15s;margin-bottom:.5rem}
+.dash-lt:hover{border-color:var(--accent)}
+.period-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);padding:1rem 1.125rem}
+.period-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:.625rem}
+.period-stat{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)}
+.period-stat:last-child{border-bottom:none}
+.period-stat-k{font-size:12px;color:var(--muted)}
+.period-stat-v{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text)}
+/* drag over */
+.todo-item.drag-over{border-color:var(--accent);background:var(--accent-bg)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-icon"><i class="ti ti-chart-line" style="font-size:15px"></i></div>
+    <div><div class="brand-label">Traders Hub</div><div class="brand-v">V2 · USD</div></div>
+  </div>
+  <div class="topbar-nav">
+    <div class="tnav active" onclick="nav('dashboard')" id="tab-dashboard"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+    <div class="tnav" onclick="nav('targets')" id="tab-targets"><i class="ti ti-checklist"></i> Targets</div>
+    <div class="tnav" onclick="nav('live')" id="tab-live"><i class="ti ti-activity"></i> Live Trades <span id="live-badge" style="display:none;background:var(--accent);color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:3px;font-family:var(--mono)"></span></div>
+    <div class="tnav" onclick="nav('history')" id="tab-history"><i class="ti ti-history"></i> Trade History</div>
+    <div class="tnav" onclick="nav('analysis')" id="tab-analysis"><i class="ti ti-chart-candle"></i> Market Analysis</div>
+    <div class="tnav" onclick="nav('systems')" id="tab-systems"><i class="ti ti-books"></i> Systems</div>
+    <div class="tnav" onclick="nav('spot')" id="tab-spot"><i class="ti ti-coin"></i> Spot</div>
+    <div class="tnav" onclick="nav('backtest')" id="tab-backtest"><i class="ti ti-test-pipe"></i> Backtest</div>
+  </div>
+  <div class="topbar-right">
+    <button class="tb-btn" onclick="exportCSV()"><i class="ti ti-download" style="font-size:12px"></i> Export</button>
+    <button class="tb-btn danger" onclick="confirmClear()"><i class="ti ti-trash" style="font-size:12px"></i></button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="lightbox" id="lightbox" onclick="closeLightbox()"><img id="lb-img" src="" alt=""></div>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="sh mb">
+    <div><div class="sh-title" id="dash-date-title">Dashboard</div><div class="sh-sub" id="dash-date"></div></div>
+    <button class="btn btn-p btn-sm" onclick="openModal('modal-open-trade')"><i class="ti ti-plus" style="font-size:12px"></i> Open Trade</button>
+  </div>
+  <!-- Row 1: Pinned targets (half height) + Trading Stats -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+    <div class="card">
+      <div class="card-hd"><span class="card-title" id="dash-targets-title">Targets</span><button class="btn btn-sm" onclick="nav('targets')">Manage <i class="ti ti-arrow-right" style="font-size:11px"></i></button></div>
+      <div class="card-body" style="padding:.875rem 1.125rem" id="dash-today-targets"></div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Trading Results</span><button class="btn btn-sm" onclick="nav('history')">Full History <i class="ti ti-arrow-right" style="font-size:11px"></i></button></div>
+      <div class="card-body" id="dash-trading-stats"></div>
+    </div>
+  </div>
+  <!-- Row 2: Latest Analysis + Daily Thoughts -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Latest Analysis</span><button class="btn btn-sm" onclick="nav('analysis')">View all <i class="ti ti-arrow-right" style="font-size:11px"></i></button></div>
+      <div class="card-body" id="dash-analysis"></div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Daily Thoughts</span><span style="font-family:var(--mono);font-size:10px;color:var(--dim)" id="thoughts-saved-indicator"></span></div>
+      <div class="card-body" style="padding:.875rem 1.125rem">
+        <textarea id="daily-thoughts" rows="6" placeholder="Ideas, observations, reminders, anything on your mind today..." style="font-size:13px;line-height:1.65;border:none;background:transparent;padding:0;resize:none;width:100%" oninput="saveThoughts()"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TARGETS ═══════════════ -->
+<div class="page" id="page-targets">
+  <div class="sh mb">
+    <div><div class="sh-title">Targets</div><div class="sh-sub">Create sections · star one to pin it to the dashboard</div></div>
+    <button class="btn btn-p" onclick="openModal('modal-new-target-section')"><i class="ti ti-plus" style="font-size:13px"></i> New Section</button>
+  </div>
+  <div id="targets-list"></div>
+  <div id="targets-empty" class="empty"><i class="ti ti-checklist"></i><p>No sections yet.<br>Create one to get started.</p></div>
+</div>
+
+<!-- ═══════════════ LIVE TRADES ═══════════════ -->
+<div class="page" id="page-live">
+  <div class="sh mb">
+    <div><div class="sh-title">Live Trades</div><div class="sh-sub">Open · manage · close → auto-logs to Trade History</div></div>
+    <button class="btn btn-p" onclick="openModal('modal-open-trade')"><i class="ti ti-plus" style="font-size:13px"></i> Open Trade</button>
+  </div>
+  <div id="live-list"></div>
+  <div id="live-empty" class="empty"><i class="ti ti-activity"></i><p>No open trades.<br>Open a trade to log your thesis and track commentary in real time.</p></div>
+</div>
+
+<!-- ═══════════════ TRADE HISTORY ═══════════════ -->
+<div class="page" id="page-history">
+  <!-- Stats bar -->
+  <div class="g5 mb" id="hist-stats"></div>
+  <!-- Period summaries -->
+  <div class="g3 mb" id="hist-periods"></div>
+  <!-- Charts row -->
+  <div class="g2 mb">
+    <div class="card"><div class="card-hd"><span class="card-title">Win / Loss / BE</span></div><div class="card-body"><div class="cw"><canvas id="wl-chart"></canvas></div></div></div>
+    <div class="card"><div class="card-hd"><span class="card-title">R by System</span></div><div class="card-body"><div class="cw"><canvas id="sys-chart"></canvas></div></div></div>
+  </div>
+  <!-- Trade table -->
+  <div class="card">
+    <div class="card-hd">
+      <span class="card-title">All Trades</span>
+      <span id="hist-count" style="font-family:var(--mono);font-size:11px;color:var(--dim)"></span>
+    </div>
+    <div class="card-body">
+      <div class="fbar">
+        <input type="text" id="h-search" placeholder="Search asset..." oninput="renderHistory()">
+        <input type="date" id="h-from" onchange="renderHistory()" title="From date">
+        <input type="date" id="h-to" onchange="renderHistory()" title="To date">
+        <select id="h-market" onchange="renderHistory()"><option value="">All markets</option><option>Crypto</option><option>Forex</option><option>Stocks</option><option>Indices</option><option>Commodities</option><option>Other</option></select>
+        <select id="h-dir" onchange="renderHistory()"><option value="">Long & Short</option><option>Long</option><option>Short</option></select>
+        <select id="h-result" onchange="renderHistory()"><option value="">All results</option><option>Win</option><option>Loss</option><option>Breakeven</option></select>
+        <select id="h-system" onchange="renderHistory()"><option value="">All systems</option></select>
+        <button class="btn btn-sm" onclick="clearHistFilters()">Clear</button>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Asset</th><th>Dir</th><th>System</th><th>Entry</th><th>Exit</th><th>R Risk</th><th>R Result</th><th>Result</th><th>Rating</th><th></th></tr></thead><tbody id="hist-tbody"></tbody></table></div>
+      <div id="hist-empty" class="empty" style="display:none"><i class="ti ti-notes"></i><p>No trades found.</p></div>
+      <div id="hist-load-more" style="display:none;text-align:center;margin-top:.75rem">
+        <button class="btn btn-g" onclick="loadMoreHistory()"><i class="ti ti-chevrons-down" style="font-size:13px"></i> Show more trades</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ MARKET ANALYSIS ═══════════════ -->
+<div class="page" id="page-analysis">
+  <div class="sh mb">
+    <div><div class="sh-title">Market Analysis</div><div class="sh-sub">Regular entries and in-depth studies</div></div>
+    <div style="display:flex;gap:.5rem">
+      <button class="btn" onclick="openModal('modal-new-study')"><i class="ti ti-microscope" style="font-size:13px"></i> New Study</button>
+      <button class="btn btn-p" onclick="openModal('modal-new-analysis')"><i class="ti ti-plus" style="font-size:13px"></i> New Analysis</button>
+    </div>
+  </div>
+  <div class="subtabs"><div class="subtab active" onclick="switchSub(event,'an')">Analysis Entries</div><div class="subtab" onclick="switchSub(event,'study')">Market Studies</div></div>
+  <div id="an-subtab">
+    <div class="fbar"><input type="text" id="an-search" placeholder="Search by title, asset, or keyword..." oninput="renderAnalysis()"><select id="an-af" onchange="renderAnalysis()"><option value="">All assets</option></select></div>
+    <div id="analysis-list"></div><div id="analysis-empty" class="empty" style="display:none"><i class="ti ti-chart-candle"></i><p>No analysis entries yet.</p></div>
+  </div>
+  <div id="study-subtab" style="display:none">
+    <div class="fbar"><input type="text" id="study-search" placeholder="Search studies..." oninput="renderStudies()"></div>
+    <div id="study-list"></div><div id="study-empty" class="empty" style="display:none"><i class="ti ti-microscope"></i><p>No studies yet.</p></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SYSTEMS ═══════════════ -->
+<div class="page" id="page-systems">
+  <div class="sh mb">
+    <div><div class="sh-title">Systems</div><div class="sh-sub">Document your trading systems · stats auto-pulled from Trade History</div></div>
+    <div style="display:flex;gap:.5rem">
+      <button class="btn" id="sys-idea-btn" onclick="openModal('modal-new-sys-idea')"><i class="ti ti-bulb" style="font-size:13px"></i> New Idea</button>
+      <button class="btn btn-p" id="sys-add-btn" onclick="openModal('modal-new-system')"><i class="ti ti-plus" style="font-size:13px"></i> Add System</button>
+    </div>
+  </div>
+  <div class="subtabs" id="sys-subtabs">
+    <div class="subtab active" onclick="switchSysTab(event,'systems')">Systems</div>
+    <div class="subtab" onclick="switchSysTab(event,'ideas')">System Ideas</div>
+  </div>
+  <div id="sys-systems-tab"><div id="systems-list"></div><div id="systems-empty" class="empty"><i class="ti ti-books"></i><p>No systems yet.</p></div></div>
+  <div id="sys-ideas-tab" style="display:none"><div id="sys-ideas-list"></div><div id="sys-ideas-empty" class="empty"><i class="ti ti-bulb"></i><p>No system ideas yet.</p></div></div>
+</div>
+
+<!-- ═══════════════ SPOT ═══════════════ -->
+<div class="page" id="page-spot">
+  <div class="sh mb">
+    <div><div class="sh-title">Spot Investing</div><div class="sh-sub">Track positions · weighted avg buy price · profit on exit</div></div>
+    <button class="btn btn-p" onclick="openModal('modal-new-spot')"><i class="ti ti-plus" style="font-size:13px"></i> Log Purchase</button>
+  </div>
+  <div class="subtabs">
+    <div class="subtab active" onclick="switchSpotTab(event,'active')">Active Positions</div>
+    <div class="subtab" onclick="switchSpotTab(event,'history')">Spot History</div>
+  </div>
+  <div id="spot-active-tab"><div id="spot-list"></div><div id="spot-empty" class="empty"><i class="ti ti-coin"></i><p>No active positions.</p></div></div>
+  <div id="spot-history-tab" style="display:none"><div id="spot-hist-list"></div><div id="spot-hist-empty" class="empty"><i class="ti ti-history"></i><p>No sold positions yet.</p></div></div>
+</div>
+
+<!-- ═══════════════ BACKTEST ═══════════════ -->
+<div class="page" id="page-backtest">
+  <div class="sh mb">
+    <div><div class="sh-title">Backtesting</div><div class="sh-sub">Standalone logs per system — switch between active backtests</div></div>
+    <div style="display:flex;gap:.5rem;align-items:center">
+      <select id="bt-log-sel" onchange="switchBtLog()" style="width:auto;padding:7px 26px 7px 10px;font-size:12px"><option value="">Select a backtest log...</option></select>
+      <button class="btn btn-p" onclick="openModal('modal-new-bt-log')"><i class="ti ti-plus" style="font-size:13px"></i> New Log</button>
+    </div>
+  </div>
+  <div id="bt-empty-state" class="empty"><i class="ti ti-test-pipe"></i><p>No backtest logs yet.<br>Create a new log to start tracking a system.</p></div>
+  <div id="bt-content" style="display:none">
+    <div class="g5 mb" id="bt-stats"></div>
+    <div class="g2 mb">
+      <div class="card"><div class="card-hd"><span class="card-title">Win / Loss / BE</span></div><div class="card-body"><div class="cws"><canvas id="bt-wl-chart"></canvas></div></div></div>
+      <div class="card"><div class="card-hd"><span class="card-title">Cumulative R</span></div><div class="card-body"><div class="cws"><canvas id="bt-pnl-chart"></canvas></div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-title" id="bt-log-title">Backtest Log</span>
+        <div style="display:flex;gap:.5rem">
+          <select id="bt-dir-f" onchange="renderBtTrades()" style="width:auto;padding:5px 22px 5px 8px;font-size:11px"><option value="">All directions</option><option>Long</option><option>Short</option></select>
+          <select id="bt-res-f" onchange="renderBtTrades()" style="width:auto;padding:5px 22px 5px 8px;font-size:11px"><option value="">All results</option><option>Win</option><option>Loss</option><option>Breakeven</option></select>
+          <button class="btn btn-p btn-sm" onclick="openModal('modal-new-bt')"><i class="ti ti-plus" style="font-size:12px"></i> Log Trade</button>
+          <button class="btn btn-sm btn-d" onclick="deleteBtLog()"><i class="ti ti-trash" style="font-size:12px"></i></button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Asset</th><th>Dir</th><th>R Risk</th><th>Result</th><th>Return R</th><th>Notes</th><th></th></tr></thead><tbody id="bt-tbody"></tbody></table></div>
+        <div id="bt-trades-empty" class="empty" style="display:none"><i class="ti ti-test-pipe"></i><p>No trades logged in this backtest yet.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- OPEN LIVE TRADE -->
+<div class="modal-bg" id="modal-open-trade"><div class="modal mlg">
+  <div class="modal-hd"><span class="modal-title">Open Live Trade</span><button class="modal-close" onclick="closeModal('modal-open-trade')">×</button></div>
+  <div class="modal-body">
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr">
+      <div class="fc"><label>Asset</label><input type="text" id="ot-asset" placeholder="BTC, EUR/USD..."></div>
+      <div class="fc"><label>Direction</label><select id="ot-dir"><option>Long</option><option>Short</option></select></div>
+      <div class="fc"><label>Market</label><select id="ot-market"><option>Crypto</option><option>Forex</option><option>Stocks</option><option>Indices</option><option>Commodities</option><option>Other</option></select></div>
+      <div class="fc"><label>Date Opened</label><input type="date" id="ot-date" class="im"></div>
+    </div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr 1fr">
+      <div class="fc"><label>Entry Price</label><input type="number" id="ot-entry" placeholder="0.00" step="any" class="im"></div>
+      <div class="fc"><label>Stop Price</label><input type="number" id="ot-stop" placeholder="0.00" step="any" class="im"></div>
+      <div class="fc"><label>Target Price</label><input type="number" id="ot-target" placeholder="0.00" step="any" class="im"></div>
+      <div class="fc"><label>R Risk</label><input type="number" id="ot-risk" placeholder="1" step="0.25" class="im"></div>
+      <div class="fc"><label>System</label><select id="ot-system"><option value="">— None —</option></select></div>
+    </div>
+    <div class="fc"><label>Pre-Trade Thesis</label>
+      <textarea id="ot-thesis" rows="5" placeholder="Why are you taking this trade? What is the setup? What are you seeing on the chart? What is your edge here?" style="background:var(--s2);border-color:var(--accent);font-size:13px;line-height:1.7"></textarea>
+    </div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-open-trade')">Cancel</button><button class="btn btn-p" onclick="openTrade()">Open Trade</button></div>
+</div></div>
+
+<!-- EDIT LIVE TRADE -->
+<div class="modal-bg" id="modal-edit-trade"><div class="modal mlg">
+  <div class="modal-hd"><span class="modal-title">Edit Trade</span><button class="modal-close" onclick="closeModal('modal-edit-trade')">×</button></div>
+  <div class="modal-body">
+    <input type="hidden" id="et-id">
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr">
+      <div class="fc"><label>Asset</label><input type="text" id="et-asset" placeholder="BTC, EUR/USD..."></div>
+      <div class="fc"><label>Direction</label><select id="et-dir"><option>Long</option><option>Short</option></select></div>
+      <div class="fc"><label>Market</label><select id="et-market"><option>Crypto</option><option>Forex</option><option>Stocks</option><option>Indices</option><option>Commodities</option><option>Other</option></select></div>
+      <div class="fc"><label>Date Opened</label><input type="date" id="et-date" class="im"></div>
+    </div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr 1fr">
+      <div class="fc"><label>Entry Price</label><input type="number" id="et-entry" placeholder="0.00" step="any" class="im"></div>
+      <div class="fc"><label>Stop Price</label><input type="number" id="et-stop" placeholder="0.00" step="any" class="im"></div>
+      <div class="fc"><label>Target Price</label><input type="number" id="et-target" placeholder="0.00" step="any" class="im"></div>
+      <div class="fc"><label>R Risk</label><input type="number" id="et-risk" placeholder="1" step="0.25" class="im"></div>
+      <div class="fc"><label>System</label><select id="et-system"><option value="">— None —</option></select></div>
+    </div>
+    <div class="fc"><label>Pre-Trade Thesis</label>
+      <textarea id="et-thesis" rows="5" placeholder="Why are you taking this trade?" style="background:var(--s2);border-color:var(--accent);font-size:13px;line-height:1.7"></textarea>
+    </div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-edit-trade')">Cancel</button><button class="btn btn-p" onclick="saveEditTrade()">Save Changes</button></div>
+</div></div>
+
+<!-- CLOSE TRADE -->
+<div class="modal-bg" id="modal-close-trade"><div class="modal mmd">
+  <div class="modal-hd"><span class="modal-title" id="ct-title">Close Trade</span><button class="modal-close" onclick="closeModal('modal-close-trade')">×</button></div>
+  <div class="modal-body">
+    <input type="hidden" id="ct-id">
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="fc"><label>Close Type</label><select id="ct-type" onchange="togglePartial()"><option value="full">Full Close</option><option value="partial">Partial Close</option></select></div>
+      <div class="fc"><label>Exit Price</label><input type="number" id="ct-exit" placeholder="0.00" step="any" class="im" oninput="calcCloseR()"></div>
+      <div class="fc"><label>Date Closed</label><input type="date" id="ct-close-date" class="im"></div>
+    </div>
+    <div id="partial-fields" style="display:none">
+      <div class="form-row" style="grid-template-columns:1fr 1fr">
+        <div class="fc"><label>% Closed</label><input type="number" id="ct-pct" placeholder="50" step="1" class="im"></div>
+        <div class="fc"><label>TP2 Target</label><input type="number" id="ct-tp2" placeholder="New target price" step="any" class="im"></div>
+      </div>
+    </div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="fc"><label>Return R</label><input type="number" id="ct-r" placeholder="Auto-calc" step="0.25" class="im"></div>
+      <div class="fc"><label>Result</label><select id="ct-result"><option>Win</option><option>Loss</option><option>Breakeven</option></select></div>
+      <div class="fc"><label>Execution Rating (1-5)</label><select id="ct-rating"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+    </div>
+    <div class="fc" style="margin-bottom:.75rem"><label>Post-Trade Review</label><textarea id="ct-review" rows="3" placeholder="What went well? What didn't? Would you take this trade again?"></textarea></div>
+    <div class="fc" style="margin-bottom:.75rem"><label>Chart URL (optional)</label><input type="text" id="ct-url" placeholder="https://..."></div>
+    <div class="fc"><label>Close Screenshot (optional)</label>
+      <div style="margin-top:4px;display:flex;align-items:center;gap:.75rem"><input type="file" id="ct-img" accept="image/*" style="display:none" onchange="previewCloseImg()"><button class="btn btn-sm" type="button" onclick="g('ct-img').click()"><i class="ti ti-photo" style="font-size:12px"></i> Upload</button><span id="ct-img-name" style="font-size:11px;color:var(--dim)"></span></div>
+      <img id="ct-img-preview" src="" style="display:none;margin-top:.75rem;max-height:120px;border-radius:var(--r);border:1px solid var(--border)">
+    </div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-close-trade')">Cancel</button><button class="btn btn-p" onclick="closeTrade()">Close Trade → Log</button></div>
+</div></div>
+
+<!-- TRADE DETAIL -->
+<div class="modal-bg" id="modal-trade-detail"><div class="modal mlg">
+  <div class="modal-hd"><span class="modal-title" id="td-title">Trade Detail</span><div style="display:flex;gap:.5rem"><button class="btn btn-sm" id="td-edit-btn">Edit</button><button class="modal-close" onclick="closeModal('modal-trade-detail')">×</button></div></div>
+  <div class="modal-body" id="td-body"></div>
+</div></div>
+
+<!-- EDIT HISTORY TRADE -->
+<div class="modal-bg" id="modal-edit-history"><div class="modal mlg">
+  <div class="modal-hd"><span class="modal-title">Edit Trade Record</span><button class="modal-close" onclick="closeModal('modal-edit-history')">×</button></div>
+  <div class="modal-body">
+    <input type="hidden" id="eh-id">
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr">
+      <div class="fc"><label>Asset</label><input type="text" id="eh-asset"></div>
+      <div class="fc"><label>Direction</label><select id="eh-dir"><option>Long</option><option>Short</option></select></div>
+      <div class="fc"><label>Market</label><select id="eh-market"><option>Crypto</option><option>Forex</option><option>Stocks</option><option>Indices</option><option>Commodities</option><option>Spot</option><option>Other</option></select></div>
+      <div class="fc"><label>System</label><input type="text" id="eh-system"></div>
+    </div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr 1fr">
+      <div class="fc"><label>Entry</label><input type="number" id="eh-entry" step="any" class="im"></div>
+      <div class="fc"><label>Stop</label><input type="number" id="eh-stop" step="any" class="im"></div>
+      <div class="fc"><label>Exit</label><input type="number" id="eh-exit" step="any" class="im"></div>
+      <div class="fc"><label>R Risk</label><input type="number" id="eh-risk" step="any" class="im"></div>
+      <div class="fc"><label>Return R</label><input type="number" id="eh-r" step="0.25" class="im"></div>
+    </div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr">
+      <div class="fc"><label>Result</label><select id="eh-result"><option>Win</option><option>Loss</option><option>Breakeven</option></select></div>
+      <div class="fc"><label>Rating</label><select id="eh-rating"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+      <div class="fc"><label>Date Opened</label><input type="date" id="eh-opened" class="im"></div>
+      <div class="fc"><label>Date Closed</label><input type="date" id="eh-closed" class="im"></div>
+    </div>
+    <div class="fc" style="margin-bottom:.75rem"><label>Thesis</label><textarea id="eh-thesis" rows="3" style="background:var(--s2);border-color:var(--accent)"></textarea></div>
+    <div class="fc"><label>Review</label><textarea id="eh-review" rows="3"></textarea></div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-edit-history')">Cancel</button><button class="btn btn-p" onclick="saveHistoryEdit()">Save Changes</button></div>
+</div></div>
+
+<!-- NEW TARGET SECTION -->
+<div class="modal-bg" id="modal-new-target-section"><div class="modal msm">
+  <div class="modal-hd"><span class="modal-title">New Target Section</span><button class="modal-close" onclick="closeModal('modal-new-target-section')">×</button></div>
+  <div class="modal-body">
+    <div class="fc"><label>Section Name</label><input type="text" id="target-section-name" placeholder="e.g. Daily Workflow, Trading Goals, Gym..." onkeydown="if(event.key==='Enter')createTargetSection()"></div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-new-target-section')">Cancel</button><button class="btn btn-p" onclick="createTargetSection()">Create</button></div>
+</div></div>
+
+<!-- ADD TASK -->
+<div class="modal-bg" id="modal-add-section-task"><div class="modal msm">
+  <div class="modal-hd"><span class="modal-title" id="add-task-section-title">Add Task</span><button class="modal-close" onclick="closeModal('modal-add-section-task')">×</button></div>
+  <div class="modal-body">
+    <input type="hidden" id="add-task-section-id">
+    <div class="fc"><label>Task</label><input type="text" id="add-task-input" placeholder="What needs to be done?" onkeydown="if(event.key==='Enter')addTaskToSection()"></div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-add-section-task')">Cancel</button><button class="btn btn-p" onclick="addTaskToSection()">Add Task</button></div>
+</div></div>
+
+<!-- NEW ANALYSIS -->
+<div class="modal-bg" id="modal-new-analysis"><div class="modal mlg">
+  <div class="modal-hd"><span class="modal-title">New Analysis Entry</span><div style="display:flex;align-items:center;gap:.75rem"><span id="an-draft-indicator" style="font-family:var(--mono);font-size:10px;color:var(--green);display:none">● saved</span><button class="modal-close" onclick="closeModal('modal-new-analysis')">×</button></div></div>
+  <div class="modal-body">
+    <div class="form-row" style="grid-template-columns:1fr 1fr">
+      <div class="fc"><label>Title / Label</label><input type="text" id="an-title" placeholder="e.g. BTC Weekly Structure Break..."></div>
+      <div class="fc"><label>Asset</label><input type="text" id="an-asset" placeholder="BTC, EUR/USD, SPX..."></div>
+    </div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="fc"><label>Date</label><input type="date" id="an-date"></div>
+      <div class="fc"><label>Bias</label><select id="an-bias"><option value="">— Select —</option><option>Bullish</option><option>Bearish</option><option>Neutral</option><option>Range-bound</option></select></div>
+      <div class="fc"><label>Timeframe</label><input type="text" id="an-tf" placeholder="e.g. 4H, Daily..."></div>
+    </div>
+    <div id="an-sections"></div>
+    <button class="btn btn-g" style="margin-top:.75rem" onclick="addAnSec()"><i class="ti ti-plus" style="font-size:13px"></i> Add section</button>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-new-analysis')">Cancel</button><button class="btn btn-p" onclick="saveAnalysis()">Save Entry</button></div>
+</div></div>
+
+<!-- NEW STUDY -->
+<div class="modal-bg" id="modal-new-study"><div class="modal mlg">
+  <div class="modal-hd"><span class="modal-title">New Market Study</span><button class="modal-close" onclick="closeModal('modal-new-study')">×</button></div>
+  <div class="modal-body">
+    <div class="form-row" style="grid-template-columns:1fr 1fr">
+      <div class="fc"><label>Study Title</label><input type="text" id="st-title" placeholder="e.g. BTC Post-Halving Cycle Analysis"></div>
+      <div class="fc"><label>Date</label><input type="date" id="st-date"></div>
+    </div>
+    <div class="fc" style="margin-bottom:.75rem"><label>What This Study Covers</label><textarea id="st-covers" rows="2" placeholder="The question you are answering or the pattern you are researching..."></textarea></div>
+    <div id="st-sections"></div>
+    <button class="btn btn-g" style="margin-bottom:.75rem" onclick="addStSec()"><i class="ti ti-plus" style="font-size:13px"></i> Add section</button>
+    <div class="fc"><label>Conclusion &amp; Data Extracted</label><textarea id="st-conclusion" rows="4" placeholder="What does this study tell you? What actionable conclusions can you draw?"></textarea></div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-new-study')">Cancel</button><button class="btn btn-p" onclick="saveStudy()">Save Study</button></div>
+</div></div>
+
+<!-- NEW SYSTEM -->
+<div class="modal-bg" id="modal-new-system"><div class="modal mlg">
+  <div class="modal-hd"><span class="modal-title">Add System</span><button class="modal-close" onclick="closeModal('modal-new-system')">×</button></div>
+  <div class="modal-body">
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="fc"><label>System Name</label><input type="text" id="sy-name" placeholder="e.g. OB Reversal"></div>
+      <div class="fc"><label>Markets</label><input type="text" id="sy-markets" placeholder="e.g. Crypto, Forex majors"></div>
+      <div class="fc"><label>Status</label><select id="sy-status"><option>Active</option><option>Testing</option><option>Retired</option><option>Under Review</option></select></div>
+    </div>
+    <div class="fc" style="margin-bottom:.75rem"><label>Timeframes</label><input type="text" id="sy-tf" placeholder="e.g. 4H bias, 1H entry, 15m confirmation"></div>
+    <div class="fc" style="margin-bottom:.75rem"><label>Entry Rules (one per line)</label><textarea id="sy-entry" rows="5" placeholder="1. Price must be at a HTF OB or FVG&#10;2. Require CHoCH on 1H before entry&#10;3. Enter on 15m structure confirmation"></textarea></div>
+    <div class="g2" style="margin-bottom:.75rem">
+      <div class="fc"><label>Stop Loss Rule</label><textarea id="sy-sl" rows="3" placeholder="Where exactly does the stop go?"></textarea></div>
+      <div class="fc"><label>Exit / Take Profit Rule</label><textarea id="sy-tp" rows="3" placeholder="How and when do you exit?"></textarea></div>
+    </div>
+    <div class="g2" style="margin-bottom:.75rem">
+      <div class="fc"><label>Invalidation Conditions</label><textarea id="sy-invalid" rows="3" placeholder="What makes you NOT take the trade?"></textarea></div>
+      <div class="fc"><label>Notes &amp; Edge</label><textarea id="sy-notes" rows="3" placeholder="What gives this system its edge?"></textarea></div>
+    </div>
+    <div class="g4" style="margin-bottom:.75rem">
+      <div class="fc"><label>Win Rate %</label><input type="number" id="sy-wr" placeholder="e.g. 55" step="0.1" class="im"></div>
+      <div class="fc"><label>Avg Win R</label><input type="number" id="sy-awr" placeholder="e.g. 2.5" step="0.1" class="im"></div>
+      <div class="fc"><label>Avg Loss R</label><input type="number" id="sy-alr" placeholder="e.g. -1" step="0.1" class="im"></div>
+      <div class="fc"><label>EV (Expected Value)</label><input type="number" id="sy-ev" placeholder="Auto or manual" step="0.01" class="im"></div>
+    </div>
+    <div class="fc"><label>System Chart / Image</label>
+      <div style="margin-top:5px;display:flex;align-items:center;gap:.75rem"><input type="file" id="sy-img" accept="image/*" style="display:none" onchange="previewSysImg()"><button class="btn btn-sm" type="button" onclick="g('sy-img').click()"><i class="ti ti-photo" style="font-size:12px"></i> Upload Image</button><button class="btn btn-sm btn-d" type="button" id="sy-img-remove" style="display:none" onclick="removeSysImg()"><i class="ti ti-x" style="font-size:12px"></i> Remove</button><span id="sy-img-name" style="font-size:11px;color:var(--dim)"></span></div>
+      <img id="sy-img-preview" src="" style="display:none;margin-top:.75rem;max-height:160px;border-radius:var(--r);border:1px solid var(--border)">
+    </div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-new-system')">Cancel</button><button class="btn btn-p" onclick="saveSystem()">Save System</button></div>
+</div></div>
+
+<!-- NEW SYSTEM IDEA -->
+<div class="modal-bg" id="modal-new-sys-idea"><div class="modal mmd">
+  <div class="modal-hd"><span class="modal-title">New System Idea</span><button class="modal-close" onclick="closeModal('modal-new-sys-idea')">×</button></div>
+  <div class="modal-body">
+    <div class="form-row" style="grid-template-columns:1fr 1fr">
+      <div class="fc"><label>Idea Title</label><input type="text" id="si-title" placeholder="e.g. London Session Reversal..."></div>
+      <div class="fc"><label>Date</label><input type="date" id="si-date"></div>
+    </div>
+    <div id="si-sections"></div>
+    <button class="btn btn-g" style="margin-top:.75rem" onclick="addSiSec()"><i class="ti ti-plus" style="font-size:13px"></i> Add section</button>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-new-sys-idea')">Cancel</button><button class="btn btn-p" onclick="saveSysIdea()">Save Idea</button></div>
+</div></div>
+
+<!-- NEW SPOT PURCHASE -->
+<div class="modal-bg" id="modal-new-spot"><div class="modal msm">
+  <div class="modal-hd"><span class="modal-title">Log Spot Purchase</span><button class="modal-close" onclick="closeModal('modal-new-spot')">×</button></div>
+  <div class="modal-body">
+    <div class="form-row" style="grid-template-columns:1fr 1fr">
+      <div class="fc"><label>Asset</label><input type="text" id="sp-asset" placeholder="BTC, ETH, SOL..."></div>
+      <div class="fc"><label>Date</label><input type="date" id="sp-date"></div>
+    </div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="fc"><label>Amount Spent ($)</label><input type="number" id="sp-usd" placeholder="e.g. 1000" step="any" class="im" oninput="calcSpotQty()"></div>
+      <div class="fc"><label>Buy Price Per Unit ($)</label><input type="number" id="sp-price" placeholder="e.g. 50000" step="any" class="im" oninput="calcSpotQty()"></div>
+      <div class="fc"><label>Quantity (auto)</label><input type="number" id="sp-qty" placeholder="Auto" step="any" class="im"></div>
+    </div>
+    <div class="fc"><label>Notes</label><textarea id="sp-notes" rows="2" placeholder="Why are you buying? Planned add levels, target..."></textarea></div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-new-spot')">Cancel</button><button class="btn btn-p" onclick="saveSpot()">Log Purchase</button></div>
+</div></div>
+
+<!-- SELL SPOT -->
+<div class="modal-bg" id="modal-sell-spot"><div class="modal msm">
+  <div class="modal-hd"><span class="modal-title" id="sell-spot-title">Sell Position</span><button class="modal-close" onclick="closeModal('modal-sell-spot')">×</button></div>
+  <div class="modal-body">
+    <input type="hidden" id="sell-asset">
+    <div class="form-row" style="grid-template-columns:1fr 1fr">
+      <div class="fc"><label>Sell Price Per Unit ($)</label><input type="number" id="sell-price" placeholder="0.00" step="any" class="im" oninput="previewSellPnl()"></div>
+      <div class="fc"><label>Date Sold</label><input type="date" id="sell-date"></div>
+    </div>
+    <div id="sell-pnl-preview" style="display:none;padding:.75rem;background:var(--s2);border-radius:var(--r);margin-bottom:.75rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;color:var(--muted)">P&L</span><span id="sell-pnl-val" style="font-family:var(--mono);font-size:14px;font-weight:700"></span></div>
+      <div style="display:flex;justify-content:space-between"><span style="font-size:11px;color:var(--muted)">Return %</span><span id="sell-pnl-pct" style="font-family:var(--mono);font-size:13px;font-weight:600"></span></div>
+    </div>
+    <div class="fc"><label>Notes</label><textarea id="sell-notes" rows="2" placeholder="Reason for selling..."></textarea></div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-sell-spot')">Cancel</button><button class="btn btn-p" onclick="sellSpot()">Confirm Sale</button></div>
+</div></div>
+
+<!-- NEW BACKTEST LOG -->
+<div class="modal-bg" id="modal-new-bt-log"><div class="modal mmd">
+  <div class="modal-hd"><span class="modal-title">New Backtest Log</span><button class="modal-close" onclick="closeModal('modal-new-bt-log')">×</button></div>
+  <div class="modal-body">
+    <div class="form-row" style="grid-template-columns:1fr 1fr">
+      <div class="fc"><label>System / Strategy Name</label><input type="text" id="btl-name" placeholder="e.g. OB Reversal H4"></div>
+      <div class="fc"><label>Start Date</label><input type="date" id="btl-date"></div>
+    </div>
+    <div class="fc" style="margin-bottom:.75rem"><label>System Rules (summary)</label><textarea id="btl-rules" rows="5" placeholder="Paste or summarise the system rules you are backtesting here..."></textarea></div>
+    <div class="fc"><label>Markets / Instruments</label><input type="text" id="btl-markets" placeholder="e.g. BTC/USD, EUR/USD..."></div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-new-bt-log')">Cancel</button><button class="btn btn-p" onclick="createBtLog()">Create Log</button></div>
+</div></div>
+
+<!-- LOG BACKTEST TRADE -->
+<div class="modal-bg" id="modal-new-bt"><div class="modal mmd">
+  <div class="modal-hd"><span class="modal-title">Log Backtest Trade</span><button class="modal-close" onclick="closeModal('modal-new-bt')">×</button></div>
+  <div class="modal-body">
+    <input type="hidden" id="bt-edit-id">
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="fc"><label>Asset</label><input type="text" id="bt-asset" placeholder="BTC/USD..."></div>
+      <div class="fc"><label>Date</label><input type="date" id="bt-dt" class="im"></div>
+      <div class="fc"><label>Direction</label><select id="bt-dir"><option>Long</option><option>Short</option></select></div>
+    </div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr">
+      <div class="fc"><label>R Risk</label><input type="number" id="bt-risk" placeholder="1" step="0.25" class="im"></div>
+      <div class="fc"><label>Result</label><select id="bt-result"><option>Win</option><option>Loss</option><option>Breakeven</option></select></div>
+      <div class="fc"><label>Return R</label><input type="number" id="bt-r" placeholder="e.g. 2 or -1" step="0.25" class="im"></div>
+      <div class="fc"><label>Entry Price</label><input type="number" id="bt-entry" placeholder="0.00" step="any" class="im"></div>
+    </div>
+    <div class="fc"><label>Notes (optional)</label><textarea id="bt-notes" rows="2" placeholder="Any observations about this trade..."></textarea></div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal('modal-new-bt')">Cancel</button><button class="btn btn-p" onclick="saveBtTrade()">Log Trade</button></div>
+</div></div>
+
+<script>
+// ── CORE UTILITIES ──
+const g=id=>document.getElementById(id);
+const gv=id=>{const e=g(id);return e?e.value.trim():'';}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>new Date().toISOString().slice(0,10);
+
+// ── DB ──
+const DB={
+  save:(k,v)=>{try{localStorage.setItem('th_'+k,JSON.stringify(v));}catch(e){console.error(e);}},
+  load:(k,d=[])=>{try{const v=localStorage.getItem('th_'+k);return v?JSON.parse(v):d;}catch{return d;}}
+};
+
+// ── DATA ──
+let LT=DB.load('live'),H=DB.load('history'),AN=DB.load('analyses'),ST=DB.load('studies');
+let SY=DB.load('systems'),SP=DB.load('spots'),TARGETS=DB.load('targets');
+let BTL=DB.load('btlogs'),BTA=DB.load('bttrades');// BTL = backtest log metadata, BTA = all trades {logId,...}
+let SI=DB.load('sysideas'),IMGS=DB.load('imgs',{});
+let THOUGHTS=DB.load('thoughts','');
+let HIST_SHOW=5,HIST_DATA=[];
+let ACTIVE_BTL=DB.load('activeBtl','');
+
+// ── TOAST ──
+function toast(msg,type='success'){
+  const el=g('toast');el.className='toast show '+type;
+  el.innerHTML=`<i class="ti ti-${type==='success'?'check':'alert-triangle'}" style="font-size:15px"></i> ${msg}`;
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// ── NAV ──
+function nav(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tnav').forEach(x=>x.classList.remove('active'));
+  g('page-'+p).classList.add('active');
+  g('tab-'+p).classList.add('active');
+  ({dashboard:renderDash,targets:renderTargets,live:renderLive,history:renderHistory,analysis:renderAnalysis,systems:renderSystems,spot:renderSpot,backtest:renderBacktest})[p]?.();
+}
+
+// ── MODAL ──
+let EDIT_ID=null;
+function openModal(id){
+  const td=today();
+  if(id==='modal-open-trade'){popSysDDs('ot-system');g('ot-date').value=td;}
+  if(id==='modal-new-analysis'&&!EDIT_ID){
+    g(id).querySelector('.modal-title').textContent='New Analysis Entry';
+    const d=loadDraft(id);
+    if(d)restoreDraft(id);
+    else{g('an-date').value=td;resetAnSecs();['an-title','an-asset','an-tf'].forEach(k=>{if(g(k))g(k).value='';});g('an-bias').value='';}
+  }
+  if(id==='modal-new-study'&&!EDIT_ID){
+    g(id).querySelector('.modal-title').textContent='New Market Study';
+    const d=loadDraft(id);
+    if(d)restoreDraft(id);
+    else{g('st-date').value=td;resetStSecs();}
+  }
+  if(id==='modal-new-system'&&!EDIT_ID){g(id).querySelector('.modal-title').textContent='Add System';}
+  if(id==='modal-new-sys-idea'&&!EDIT_ID){
+    g(id).querySelector('.modal-title').textContent='New System Idea';
+    const d=loadDraft(id);
+    if(d)restoreDraft(id);
+    else{g('si-date').value=td;siIdx=1;g('si-sections').innerHTML=siSecHTML(0);g('si-title').value='';}
+  }
+  if(id==='modal-new-spot') g('sp-date').value=td;
+  if(id==='modal-new-bt') g('bt-dt').value=td;
+  if(id==='modal-new-bt-log') g('btl-date').value=td;
+  if(id==='modal-close-trade') g('ct-close-date').value=td;
+  g(id).classList.add('open');
+}
+function closeModal(id){
+  g(id).classList.remove('open');
+  if(['modal-new-analysis','modal-new-study','modal-new-system','modal-new-sys-idea','modal-edit-trade'].includes(id)) EDIT_ID=null;
+}
+document.querySelectorAll('.modal-bg').forEach(bg=>{
+  bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');});
+  const id=bg.id;
+  bg.addEventListener('input',()=>saveDraft(id));
+  bg.addEventListener('change',()=>saveDraft(id));
+});
+
+// ── LIGHTBOX ──
+function openLBdirect(src){g('lb-img').src=src;g('lightbox').classList.add('open');}
+function closeLightbox(){g('lightbox').classList.remove('open');}
+function openLB(k){if(IMGS[k])openLBdirect(IMGS[k]);}
+function saveImgs(){DB.save('imgs',IMGS);}
+
+// ── DRAFT SYSTEM ──
+const DRAFT_KEYS={'modal-new-analysis':['an-title','an-asset','an-date','an-bias','an-tf'],'modal-new-study':['st-title','st-date','st-covers','st-conclusion'],'modal-new-sys-idea':['si-title','si-date'],'modal-open-trade':['ot-asset','ot-entry','ot-stop','ot-target','ot-risk','ot-thesis']};
+function saveDraft(mid){
+  const keys=DRAFT_KEYS[mid];if(!keys)return;
+  const d={};keys.forEach(k=>{const el=g(k);if(el)d[k]=el.value;});
+  const anTxts=[...document.querySelectorAll('#modal-new-analysis .an-sec .an-txt')];if(anTxts.length)d._secs=anTxts.map(t=>t.value);
+  const stTxts=[...document.querySelectorAll('#modal-new-study .st-sec .st-txt')];if(stTxts.length){d._secs=stTxts.map(t=>t.value);const c=g('st-conclusion');if(c)d._conc=c.value;}
+  const siTxts=[...document.querySelectorAll('#modal-new-sys-idea .si-sec .si-txt')];if(siTxts.length)d._secs=siTxts.map(t=>t.value);
+  localStorage.setItem('th_draft_'+mid,JSON.stringify(d));
+  if(mid==='modal-new-analysis'){const ind=g('an-draft-indicator');if(ind){ind.style.display='inline';clearTimeout(ind._t);ind._t=setTimeout(()=>ind.style.display='none',1800);}}
+}
+function loadDraft(mid){try{return JSON.parse(localStorage.getItem('th_draft_'+mid)||'null');}catch{return null;}}
+function clearDraft(mid){localStorage.removeItem('th_draft_'+mid);}
+function restoreDraft(mid){
+  const d=loadDraft(mid);if(!d)return false;
+  (DRAFT_KEYS[mid]||[]).forEach(k=>{const el=g(k);if(el&&d[k]!==undefined)el.value=d[k];});
+  if(mid==='modal-new-analysis'&&d._secs?.length){anIdx=d._secs.length;g('an-sections').innerHTML=d._secs.map((_,i)=>anSecHTML(i)).join('');d._secs.forEach((txt,i)=>{const el=document.querySelectorAll('#modal-new-analysis .an-sec .an-txt')[i];if(el)el.value=txt;});}
+  if(mid==='modal-new-study'&&d._secs?.length){stIdx=d._secs.length;g('st-sections').innerHTML=d._secs.map((_,i)=>stSecHTML(i)).join('');d._secs.forEach((txt,i)=>{const el=document.querySelectorAll('#modal-new-study .st-sec .st-txt')[i];if(el)el.value=txt;});if(d._conc&&g('st-conclusion'))g('st-conclusion').value=d._conc;}
+  if(mid==='modal-new-sys-idea'&&d._secs?.length){siIdx=d._secs.length;g('si-sections').innerHTML=d._secs.map((_,i)=>siSecHTML(i)).join('');d._secs.forEach((txt,i)=>{const el=document.querySelectorAll('#modal-new-sys-idea .si-sec .si-txt')[i];if(el)el.value=txt;});}
+  return true;
+}
+
+// ── DASHBOARD ──
+let thoughtsTimer=null;
+function saveThoughts(){
+  clearTimeout(thoughtsTimer);
+  thoughtsTimer=setTimeout(()=>{THOUGHTS=g('daily-thoughts').value;DB.save('thoughts',THOUGHTS);const ind=g('thoughts-saved-indicator');if(ind){ind.textContent='● saved';clearTimeout(ind._t);ind._t=setTimeout(()=>ind.textContent='',1500);}},600);
+}
+
+function renderDash(){
+  const now=new Date();
+  g('dash-date').textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  // Trading stats
+  const closed=H.filter(t=>t.result!=='Open');
+  const totalR=+closed.reduce((s,t)=>s+(t.rResult||0),0).toFixed(2);
+  const wins=closed.filter(t=>t.result==='Win').length;
+  const wr=closed.length?((wins/closed.length)*100).toFixed(1):0;
+  const avgR=closed.length?(totalR/closed.length).toFixed(2):0;
+  g('dash-trading-stats').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+      <div class="stat ${totalR>=0?'pos':'neg'}"><div class="stat-label">Total P&L</div><div class="stat-val">${totalR>=0?'+':''}${totalR}R</div><div class="stat-sub">${H.length} trades total</div></div>
+      <div class="stat"><div class="stat-label">Win Rate</div><div class="stat-val">${wr}%</div><div class="stat-sub">${wins}W of ${closed.length} closed</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+      <div class="stat ${avgR>=0?'pos':'neg'}"><div class="stat-label">Avg R / Trade</div><div class="stat-val">${avgR>=0?'+':''}${avgR}R</div><div class="stat-sub">closed trades only</div></div>
+      <div class="stat acc"><div class="stat-label">Open Positions</div><div class="stat-val">${LT.length}</div><div class="stat-sub">${LT.length?LT.map(t=>t.asset).join(', '):'no open trades'}</div></div>
+    </div>`;
+  // Daily thoughts restore
+  if(g('daily-thoughts'))g('daily-thoughts').value=THOUGHTS;
+  // Latest analysis
+  // Pinned targets on dashboard (must run before any early return)
+  renderDashTargets();
+  const ap=g('dash-analysis');
+  const latest=[...AN,...ST].sort((a,b)=>b.createdAt-a.createdAt).slice(0,5);
+  if(!latest.length){ap.innerHTML='<div class="empty" style="padding:1rem"><p style="font-size:12px">No analysis entries yet.</p></div>';return;}
+  ap.innerHTML=latest.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border);gap:.75rem;cursor:pointer" onclick="nav('analysis')"><div><div style="font-size:13px;font-weight:600;color:var(--text)">${a.title||a.asset||'—'}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${a.asset||''} ${a.date?'· '+a.date:''} ${a.bias?'· '+a.bias:''}</div></div>${a.covers?'<span class="tag to" style="font-size:9px">STUDY</span>':''}</div>`).join('');
+}
+
+function renderDashTargets(){
+  const el=g('dash-today-targets');const titleEl=g('dash-targets-title');if(!el)return;
+  const pinned=TARGETS.find(s=>s.pinned);
+  if(!pinned){titleEl.textContent='Targets';el.innerHTML='<div style="font-size:12px;color:var(--dim);padding:.5rem 0">⭐ Star a section in Targets to pin it here.</div>';return;}
+  titleEl.textContent=pinned.name;
+  const tasks=pinned.tasks||[];
+  const done=tasks.filter(t=>t.completed).length;
+  const pct=tasks.length?Math.round(done/tasks.length*100):0;
+  const incomplete=tasks.filter(t=>!t.completed).slice(0,4);
+  el.innerHTML=`<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem">
+    <div class="tprog-track" style="flex:1"><div class="tprog-fill" style="width:${pct}%"></div></div>
+    <span style="font-family:var(--mono);font-size:11px;color:var(--text2)">${done}/${tasks.length}</span>
+  </div>
+  ${incomplete.map(t=>`<div style="display:flex;align-items:center;gap:8px;padding:.5rem 0;border-bottom:1px solid var(--border)">
+    <div class="todo-cb ${t.completed?'checked':''}" onclick="toggleSectionTask('${pinned.id}','${t.id}');renderDashTargets()" style="width:16px;height:16px;min-width:16px"></div>
+    <span style="font-size:12px;color:var(--text2);${t.completed?'text-decoration:line-through;color:var(--dim)':''}">${t.label}</span>
+  </div>`).join('')}
+  ${tasks.length-incomplete.length>0?`<div style="font-size:11px;color:var(--dim);padding:.5rem 0">+${tasks.length-incomplete.length} more · <span style="cursor:pointer;color:var(--accent)" onclick="nav('targets')">View all</span></div>`:''}`;
+}
+
+// ── TARGETS ──
+let TG_OPEN={},dragSrc=null,dragSrcSec=null;
+
+function renderTargets(){
+  const list=g('targets-list'),empty=g('targets-empty');
+  if(!TARGETS.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  list.innerHTML=TARGETS.map(sec=>{
+    const tasks=sec.tasks||[];
+    const done=tasks.filter(t=>t.completed).length;
+    const pct=tasks.length?Math.round(done/tasks.length*100):0;
+    const isOpen=TG_OPEN[sec.id]!==false;
+    const rev=sec.review||'';
+    return `<div class="target-section" id="tgsec-wrap-${sec.id}">
+      <div class="ts-hdr ${sec.pinned?'pinned':''}" onclick="toggleTargetSection('${sec.id}')">
+        <i class="ti ti-${isOpen?'chevron-down':'chevron-right'}" style="font-size:13px;color:var(--dim)"></i>
+        <span class="ts-name">${sec.name}</span>
+        <span class="ts-prog">${done}/${tasks.length}</span>
+        <div class="tprog-track" style="width:60px;margin:0"><div class="tprog-fill" style="width:${pct}%"></div></div>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:4px;margin-left:4px">
+          <button class="btn btn-xs ${sec.pinned?'btn-p':''}" onclick="pinSection('${sec.id}')" title="${sec.pinned?'Unpin':'Pin to dashboard'}"><i class="ti ti-star${sec.pinned?'-filled':''}" style="font-size:11px"></i></button>
+          <button class="btn btn-xs btn-d" onclick="deleteTargetSection('${sec.id}')"><i class="ti ti-trash" style="font-size:11px"></i></button>
+        </div>
+      </div>
+      <div class="ts-body ${isOpen?'open':''}" id="tgbody-${sec.id}">
+        <div class="ts-actions">
+          <button class="btn btn-sm" onclick="openAddTaskModal('${sec.id}','${sec.name}')"><i class="ti ti-plus" style="font-size:12px"></i> Add Task</button>
+          ${done>0?`<button class="btn btn-sm" onclick="clearDoneTasks('${sec.id}')">Clear done (${done})</button>`:''}
+        </div>
+        <div id="tasks-${sec.id}">
+        ${tasks.map((t,i)=>`<div class="todo-item ${t.completed?'done':''}" draggable="true" data-id="${t.id}" data-sec="${sec.id}" data-idx="${i}"
+            ondragstart="dragStart(event,'${sec.id}','${t.id}')"
+            ondragover="event.preventDefault();this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="dragDrop(event,'${sec.id}','${t.id}')">
+          <span class="todo-drag"><i class="ti ti-grip-vertical"></i></span>
+          <div class="todo-cb ${t.completed?'checked':''}" onclick="toggleSectionTask('${sec.id}','${t.id}')"></div>
+          <div class="todo-label" contenteditable="false" onclick="startEditTask(this)" onblur="saveTaskEdit(this,'${sec.id}','${t.id}')" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${t.label}</div>
+          <button class="todo-del" onclick="deleteSectionTask('${sec.id}','${t.id}')"><i class="ti ti-trash"></i></button>
+        </div>`).join('')}
+        ${!tasks.length?'<div style="font-size:12px;color:var(--dim);padding:.5rem 0">No tasks — click Add Task.</div>':''}
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:.875rem;margin-top:.875rem">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:.5rem">Review</div>
+          <textarea rows="3" placeholder="What went well? What didn't? What to focus on next?" style="font-size:13px;width:100%;line-height:1.65" onblur="saveReviewText('${sec.id}',this.value)">${rev}</textarea>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleTargetSection(id){
+  TG_OPEN[id]=TG_OPEN[id]===false?true:false;
+  renderTargets();
+}
+function pinSection(id){
+  TARGETS.forEach(s=>s.pinned=s.id===id?!s.pinned:false);
+  DB.save('targets',TARGETS);renderTargets();renderDashTargets();
+  toast(TARGETS.find(s=>s.id===id)?.pinned?'Section pinned to dashboard':'Section unpinned');
+}
+function startEditTask(el){el.contentEditable='true';el.focus();const r=document.createRange();r.selectNodeContents(el);const s=window.getSelection();s.removeAllRanges();s.addRange(r);}
+function saveTaskEdit(el,secId,taskId){
+  el.contentEditable='false';
+  const newLabel=el.textContent.trim();if(!newLabel){el.textContent=el.dataset.orig||newLabel;return;}
+  const sec=TARGETS.find(s=>s.id===secId);if(!sec)return;
+  const t=sec.tasks.find(x=>x.id===taskId);if(t)t.label=newLabel;
+  DB.save('targets',TARGETS);renderDashTargets();
+}
+function dragStart(e,secId,taskId){dragSrc={secId,taskId};}
+function dragDrop(e,secId,taskId){
+  e.preventDefault();document.querySelectorAll('.todo-item').forEach(el=>el.classList.remove('drag-over'));
+  if(!dragSrc||dragSrc.taskId===taskId)return;
+  const sec=TARGETS.find(s=>s.id===secId);if(!sec||sec.id!==dragSrc.secId)return;
+  const from=sec.tasks.findIndex(t=>t.id===dragSrc.taskId);
+  const to=sec.tasks.findIndex(t=>t.id===taskId);
+  if(from<0||to<0)return;
+  const [item]=sec.tasks.splice(from,1);sec.tasks.splice(to,0,item);
+  DB.save('targets',TARGETS);renderTargets();dragSrc=null;
+}
+function createTargetSection(){
+  const name=gv('target-section-name').trim();if(!name){toast('Name required','error');return;}
+  TARGETS.push({id:uid(),name,tasks:[],createdAt:Date.now()});
+  DB.save('targets',TARGETS);g('target-section-name').value='';
+  closeModal('modal-new-target-section');renderTargets();renderDashTargets();toast('Section created');
+}
+function openAddTaskModal(sId,sName){
+  g('add-task-section-id').value=sId;g('add-task-section-title').textContent='Add Task — '+sName;g('add-task-input').value='';openModal('modal-add-section-task');
+}
+function addTaskToSection(){
+  const sId=gv('add-task-section-id'),label=gv('add-task-input').trim();if(!label){toast('Task required','error');return;}
+  const sec=TARGETS.find(s=>s.id===sId);if(!sec)return;
+  if(!sec.tasks)sec.tasks=[];
+  sec.tasks.push({id:uid(),label,completed:false,createdAt:Date.now()});
+  DB.save('targets',TARGETS);closeModal('modal-add-section-task');renderTargets();renderDashTargets();toast('Task added');
+}
+function toggleSectionTask(sId,tId){
+  const sec=TARGETS.find(s=>s.id===sId);if(!sec)return;
+  const t=(sec.tasks||[]).find(x=>x.id===tId);if(!t)return;
+  t.completed=!t.completed;DB.save('targets',TARGETS);renderTargets();renderDashTargets();
+}
+function deleteSectionTask(sId,tId){
+  const sec=TARGETS.find(s=>s.id===sId);if(!sec)return;
+  sec.tasks=sec.tasks.filter(x=>x.id!==tId);DB.save('targets',TARGETS);renderTargets();renderDashTargets();
+}
+function deleteTargetSection(sId){
+  if(!confirm('Delete this section and all tasks?'))return;
+  TARGETS=TARGETS.filter(s=>s.id!==sId);DB.save('targets',TARGETS);renderTargets();renderDashTargets();toast('Deleted');
+}
+function clearDoneTasks(sId){
+  const sec=TARGETS.find(s=>s.id===sId);if(!sec)return;
+  sec.tasks=sec.tasks.filter(t=>!t.completed);DB.save('targets',TARGETS);renderTargets();renderDashTargets();toast('Cleared');
+}
+function saveReviewText(sId,val){
+  const sec=TARGETS.find(s=>s.id===sId);if(!sec)return;
+  sec.review=val;DB.save('targets',TARGETS);
+}
+
+// ── LIVE TRADES ──
+function popSysDDs(id){
+  const opts='<option value="">— None —</option>'+SY.map(s=>`<option>${s.name}</option>`).join('');
+  const el=g(id);if(el)el.innerHTML=opts;
+}
+function updateBadge(){const b=g('live-badge');if(b){if(LT.length){b.textContent=LT.length;b.style.display='inline';}else b.style.display='none';}}
+
+function openTrade(){
+  const asset=gv('ot-asset').trim();if(!asset){toast('Asset required','error');return;}
+  LT.unshift({id:uid(),asset:asset.toUpperCase(),dir:gv('ot-dir'),market:gv('ot-market'),entry:gv('ot-entry'),stop:gv('ot-stop'),target:gv('ot-target'),risk:gv('ot-risk'),system:gv('ot-system'),thesis:gv('ot-thesis'),openedAt:gv('ot-date')||today(),notes:[],createdAt:Date.now()});
+  DB.save('live',LT);closeModal('modal-open-trade');clearDraft('modal-open-trade');
+  ['ot-asset','ot-entry','ot-stop','ot-target','ot-risk','ot-thesis'].forEach(k=>{const el=g(k);if(el)el.value='';});
+  updateBadge();toast('Trade opened');renderLive();
+}
+
+function openEditTradeModal(id){
+  const lt=LT.find(x=>x.id===id);if(!lt)return;
+  EDIT_ID=id;
+  g('et-id').value=id;g('et-asset').value=lt.asset;g('et-dir').value=lt.dir;
+  g('et-market').value=lt.market||'Crypto';g('et-date').value=lt.openedAt||today();
+  g('et-entry').value=lt.entry||'';g('et-stop').value=lt.stop||'';
+  g('et-target').value=lt.target||'';g('et-risk').value=lt.risk||'';
+  g('et-thesis').value=lt.thesis||'';
+  popSysDDs('et-system');g('et-system').value=lt.system||'';
+  openModal('modal-edit-trade');
+}
+function saveEditTrade(){
+  const id=gv('et-id');const lt=LT.find(x=>x.id===id);if(!lt)return;
+  lt.asset=gv('et-asset').toUpperCase()||lt.asset;lt.dir=gv('et-dir');lt.market=gv('et-market');
+  lt.openedAt=gv('et-date')||lt.openedAt;lt.entry=gv('et-entry');lt.stop=gv('et-stop');
+  lt.target=gv('et-target');lt.risk=gv('et-risk');lt.system=gv('et-system');lt.thesis=gv('et-thesis');
+  DB.save('live',LT);EDIT_ID=null;closeModal('modal-edit-trade');toast('Trade updated');renderLive();
+}
+
+function openCloseModal(id){
+  const lt=LT.find(x=>x.id===id);if(!lt)return;
+  g('ct-id').value=id;g('ct-title').textContent=`Close — ${lt.asset} ${lt.dir}`;
+  ['ct-exit','ct-r','ct-review','ct-url','ct-pct','ct-tp2'].forEach(i=>{const el=g(i);if(el)el.value='';});
+  g('ct-img-name').textContent='';g('ct-img-preview').style.display='none';
+  g('ct-type').value='full';g('partial-fields').style.display='none';
+  g('ct-close-date').value=today();
+  openModal('modal-close-trade');
+}
+function togglePartial(){g('partial-fields').style.display=gv('ct-type')==='partial'?'block':'none';}
+function calcCloseR(){
+  const id=gv('ct-id');const lt=LT.find(x=>x.id===id);if(!lt||!lt.entry||!lt.stop)return;
+  const exit=parseFloat(gv('ct-exit'));if(isNaN(exit))return;
+  const entry=parseFloat(lt.entry),stop=parseFloat(lt.stop);
+  const rp=Math.abs(entry-stop);if(!rp)return;
+  const gain=lt.dir==='Long'?exit-entry:entry-exit;
+  g('ct-r').value=+(gain/rp*(parseFloat(lt.risk)||1)).toFixed(2);
+}
+function previewCloseImg(){
+  const file=g('ct-img').files[0];if(!file)return;
+  g('ct-img-name').textContent=file.name;
+  const r=new FileReader();r.onload=e=>{const p=g('ct-img-preview');p.src=e.target.result;p.style.display='block';};r.readAsDataURL(file);
+}
+function closeTrade(){
+  const id=gv('ct-id');const lt=LT.find(x=>x.id===id);if(!lt)return;
+  const exit=gv('ct-exit'),result=gv('ct-result'),rResult=parseFloat(gv('ct-r'))||null,rating=gv('ct-rating'),review=gv('ct-review'),url=gv('ct-url');
+  const isPartial=gv('ct-type')==='partial',pct=isPartial?gv('ct-pct'):'100',tp2=isPartial?gv('ct-tp2'):'';
+  const closeDate=gv('ct-close-date')||today();
+  const imgFile=g('ct-img').files[0];
+  if(imgFile){const r2=new FileReader();r2.onload=e=>{const k=uid();IMGS[k]=e.target.result;saveImgs();finalClose(lt,exit,result,rResult,rating,review,url,k,isPartial,pct,tp2,closeDate);};r2.readAsDataURL(imgFile);}
+  else finalClose(lt,exit,result,rResult,rating,review,url,null,isPartial,pct,tp2,closeDate);
+}
+function finalClose(lt,exit,result,rResult,rating,review,url,imgKey,isPartial,pct,tp2,closeDate){
+  H.unshift({id:uid(),asset:lt.asset,dir:lt.dir,market:lt.market,system:lt.system,entry:lt.entry,stop:lt.stop,exit,risk:lt.risk,rResult,result,rating,thesis:lt.thesis,notes:lt.notes,review,closeUrl:url,closeImgKey:imgKey,isPartial,pctClosed:pct,tp2,date:closeDate,openedAt:lt.openedAt,closedAt:Date.now(),createdAt:lt.openedAt||Date.now()});
+  DB.save('history',H);
+  if(isPartial){lt.notes.push({text:`Partial close: ${pct}% at ${exit}. R: ${rResult>=0?'+':''}${rResult}R. TP2: ${tp2||'—'}`,ts:Date.now(),id:uid()});if(tp2)lt.target=tp2;DB.save('live',LT);}
+  else{LT=LT.filter(x=>x.id!==lt.id);DB.save('live',LT);}
+  updateBadge();closeModal('modal-close-trade');toast('Trade closed → logged to History');renderLive();
+}
+function delLive(id){if(!confirm('Delete this trade?'))return;LT=LT.filter(x=>x.id!==id);DB.save('live',LT);updateBadge();renderLive();toast('Deleted');}
+
+function addNote(id){
+  const lt=LT.find(x=>x.id===id);if(!lt)return;
+  const el=g('note-'+id);const text=el.value.trim();if(!text)return;
+  lt.notes.push({id:uid(),text,ts:Date.now()});DB.save('live',LT);el.value='';renderLive();
+}
+function editNote(tradeId,noteId){
+  const lt=LT.find(x=>x.id===tradeId);if(!lt)return;
+  const n=lt.notes.find(x=>x.id===noteId);if(!n)return;
+  const newText=prompt('Edit note:',n.text);if(newText===null)return;
+  n.text=newText.trim()||n.text;DB.save('live',LT);renderLive();
+}
+function delNote(tradeId,noteId){
+  const lt=LT.find(x=>x.id===tradeId);if(!lt)return;
+  lt.notes=lt.notes.filter(x=>x.id!==noteId);DB.save('live',LT);renderLive();
+}
+
+function renderLive(){
+  const list=g('live-list'),empty=g('live-empty');updateBadge();
+  if(!LT.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  list.innerHTML=LT.map(lt=>{
+    const notes=lt.notes.map(n=>{
+      const d=new Date(n.ts);
+      return `<div class="tl-item"><div class="tl-ts">${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}<br>${d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div><div class="tl-txt">${n.text.replace(/\n/g,'<br>')}</div><div style="display:flex;gap:3px;flex-shrink:0"><button class="btn btn-xs" onclick="editNote('${lt.id}','${n.id||n.ts}')"><i class="ti ti-pencil" style="font-size:10px"></i></button><button class="btn btn-xs btn-d" onclick="delNote('${lt.id}','${n.id||n.ts}')"><i class="ti ti-trash" style="font-size:10px"></i></button></div></div>`;
+    }).join('');
+    const od=new Date(typeof lt.openedAt==='number'?lt.openedAt:Date.parse(lt.openedAt));
+    const daysOpen=Math.floor((Date.now()-od.getTime())/86400000);
+    return `<div class="lt-card">
+      <div class="lt-hd">
+        <div class="lt-meta">
+          <span class="lt-asset">${lt.asset}</span>
+          <span class="tag ${lt.dir==='Long'?'tl':'ts'}">${lt.dir}</span>
+          <span style="font-size:12px;color:var(--muted)">${lt.market||''}</span>
+          ${lt.system?`<span style="font-size:11px;background:var(--s3);padding:2px 8px;border-radius:4px;color:var(--muted);font-weight:500">${lt.system}</span>`:''}
+          <span style="font-family:var(--mono);font-size:10px;color:var(--dim)">${daysOpen===0?'Today':daysOpen+'d open'} · ${typeof lt.openedAt==='string'?lt.openedAt:od.toLocaleDateString('en-GB')}</span>
+        </div>
+        <div class="lt-act">
+          ${lt.entry?`<span class="lt-lv">Entry <span>${lt.entry}</span></span>`:''}
+          ${lt.stop?`<span class="lt-lv">SL <span style="color:var(--red)">${lt.stop}</span></span>`:''}
+          ${lt.target?`<span class="lt-lv">TP <span style="color:var(--green)">${lt.target}</span></span>`:''}
+          ${lt.risk?`<span class="lt-lv">Risk <span>${lt.risk}R</span></span>`:''}
+          <button class="btn btn-sm" onclick="openEditTradeModal('${lt.id}')"><i class="ti ti-pencil" style="font-size:12px"></i> Edit</button>
+          <button class="btn btn-sm btn-s" onclick="openCloseModal('${lt.id}')"><i class="ti ti-check" style="font-size:12px"></i> Close</button>
+          <button class="btn btn-sm btn-d" onclick="delLive('${lt.id}')"><i class="ti ti-trash" style="font-size:12px"></i></button>
+        </div>
+      </div>
+      <div class="lt-body">
+        ${lt.thesis?`<div class="lt-thesis">${lt.thesis.replace(/\n/g,'<br>')}</div>`:''}
+        ${notes?`<div class="tline" style="margin-bottom:.875rem">${notes}</div>`:''}
+        <div class="add-note">
+          <textarea id="note-${lt.id}" rows="2" placeholder="Add commentary — what is price doing? Management decisions?" style="flex:1"></textarea>
+          <button class="btn btn-sm btn-p" onclick="addNote('${lt.id}')" style="align-self:flex-end;flex-shrink:0">Add</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── TRADE HISTORY ──
+function clearHistFilters(){['h-search','h-from','h-to'].forEach(k=>{const el=g(k);if(el)el.value=''});['h-market','h-dir','h-result','h-system'].forEach(k=>{const el=g(k);if(el)el.selectedIndex=0});HIST_SHOW=5;renderHistory();}
+function loadMoreHistory(){HIST_SHOW+=10;renderHistoryTable();}
+
+function renderHistory(){
+  HIST_SHOW=5;
+  const hss=g('h-system');
+  if(hss){const cur=hss.value;const sl=[...new Set(H.map(t=>t.system).filter(Boolean))];hss.innerHTML='<option value="">All systems</option>'+sl.map(x=>`<option ${x===cur?'selected':''}>${x}</option>`).join('');}
+  const search=gv('h-search').toLowerCase(),mkt=gv('h-market'),dir=gv('h-dir'),res=gv('h-result'),sys=gv('h-system');
+  const from=gv('h-from'),to=gv('h-to');
+  HIST_DATA=H.filter(t=>{
+    if(search&&!t.asset.toLowerCase().includes(search)&&!(t.system||'').toLowerCase().includes(search))return false;
+    if(mkt&&t.market!==mkt)return false;if(dir&&t.dir!==dir)return false;if(res&&t.result!==res)return false;if(sys&&t.system!==sys)return false;
+    if(from&&t.date&&t.date<from)return false;if(to&&t.date&&t.date>to)return false;
+    return true;
+  });
+  const closed=HIST_DATA.filter(t=>t.result!=='Open');
+  const wins=closed.filter(t=>t.result==='Win').length,losses=closed.filter(t=>t.result==='Loss').length;
+  const tR=+HIST_DATA.reduce((s,t)=>s+(t.rResult||0),0).toFixed(2);
+  const avgR=closed.length?(tR/closed.length).toFixed(2):0;
+  const wr=closed.length?((wins/closed.length)*100).toFixed(1):0;
+  const rs=HIST_DATA.map(t=>t.rResult).filter(r=>r!=null);
+  const best=rs.length?Math.max(...rs):null,worst=rs.length?Math.min(...rs):null;
+  g('hist-stats').innerHTML=`
+    <div class="stat ${tR>=0?'pos':'neg'}"><div class="stat-label">Total P&L</div><div class="stat-val">${tR>=0?'+':''}${tR}R</div><div class="stat-sub">${HIST_DATA.length} trades</div></div>
+    <div class="stat"><div class="stat-label">Win Rate</div><div class="stat-val">${wr}%</div><div class="stat-sub">${wins}W · ${losses}L · ${closed.length-wins-losses}BE</div></div>
+    <div class="stat ${avgR>=0?'pos':'neg'}"><div class="stat-label">Avg R / Trade</div><div class="stat-val">${avgR>=0?'+':''}${avgR}R</div></div>
+    <div class="stat pos"><div class="stat-label">Best Trade</div><div class="stat-val">${best!=null?'+'+best+'R':'—'}</div></div>
+    <div class="stat neg"><div class="stat-label">Worst Trade</div><div class="stat-val">${worst!=null?worst+'R':'—'}</div></div>`;
+  renderPeriodCards(HIST_DATA);
+  renderHistCharts(HIST_DATA);
+  renderHistoryTable();
+}
+function renderPeriodCards(data){
+  const now=new Date(),yr=now.getFullYear(),mo=now.getMonth()+1,q=Math.ceil(mo/3);
+  const moStr=`${yr}-${String(mo).padStart(2,'0')}`;
+  const qStart=`${yr}-${String((q-1)*3+1).padStart(2,'0')}`;
+  const periods=[
+    {label:`Month — ${now.toLocaleDateString('en-GB',{month:'long'})}`,fn:t=>t.date&&t.date.startsWith(moStr)},
+    {label:`Q${q} — ${yr}`,fn:t=>t.date&&t.date>=qStart&&t.date<=`${yr}-${String(q*3).padStart(2,'0')}-31`},
+    {label:`Year — ${yr}`,fn:t=>t.date&&t.date.startsWith(yr+'')},
+  ];
+  g('hist-periods').innerHTML=periods.map(p=>{
+    const pd=data.filter(p.fn);const cl=pd.filter(t=>t.result!=='Open');
+    const r=+pd.reduce((s,t)=>s+(t.rResult||0),0).toFixed(2);
+    const w=cl.filter(t=>t.result==='Win').length;
+    const wr2=cl.length?((w/cl.length)*100).toFixed(0):0;
+    return `<div class="period-card"><div class="period-label">${p.label}</div>
+      <div class="period-stat"><span class="period-stat-k">Total R</span><span class="period-stat-v" style="color:${r>=0?'var(--green)':'var(--red)'}">${r>=0?'+':''}${r}R</span></div>
+      <div class="period-stat"><span class="period-stat-k">Win Rate</span><span class="period-stat-v">${wr2}%</span></div>
+      <div class="period-stat"><span class="period-stat-k">Trades</span><span class="period-stat-v">${pd.length}</span></div>
+    </div>`;
+  }).join('');
+}
+let wC=null,sC=null;
+function renderHistCharts(data){
+  const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'var(--s3)',titleColor:'var(--muted)',bodyColor:'var(--text)',borderColor:'var(--border2)',borderWidth:1}},scales:{x:{grid:{color:'rgba(91,138,240,0.06)'},ticks:{color:'var(--dim)',font:{family:"'IBM Plex Mono'",size:9},maxTicksLimit:8}},y:{grid:{color:'rgba(91,138,240,0.06)'},ticks:{color:'var(--dim)',font:{family:"'IBM Plex Mono'",size:9}}}}};
+  const closed=data.filter(t=>t.result!=='Open');
+  const wins=closed.filter(t=>t.result==='Win').length,losses=closed.filter(t=>t.result==='Loss').length,bes=closed.filter(t=>t.result==='Breakeven').length;
+  if(wC)wC.destroy();
+  wC=new Chart(g('wl-chart').getContext('2d'),{type:'doughnut',data:{labels:['Win','Loss','BE'],datasets:[{data:[wins,losses,bes],backgroundColor:['#2ECC8E','#E05555','#D4A843'],borderWidth:0,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#8090A8',font:{family:"'IBM Plex Mono'",size:10},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#232C40',borderColor:'#384A6A',borderWidth:1,bodyColor:'#F0EEE9'}}}});
+  // R by System - horizontal bar
+  const sysList=[...new Set(data.map(t=>t.system).filter(Boolean))];
+  const sysR=sysList.map(s=>+data.filter(t=>t.system===s).reduce((sum,t)=>sum+(t.rResult||0),0).toFixed(2));
+  if(sC)sC.destroy();
+  if(sysList.length){
+    sC=new Chart(g('sys-chart').getContext('2d'),{type:'bar',data:{labels:sysList,datasets:[{data:sysR,backgroundColor:sysR.map(v=>v>=0?'rgba(46,204,142,0.25)':'rgba(224,85,85,0.25)'),borderColor:sysR.map(v=>v>=0?'#2ECC8E':'#E05555'),borderWidth:2,borderRadius:4}]},options:{...co,indexAxis:'y',scales:{x:{...co.scales?.x,ticks:{...co.scales?.x?.ticks,callback:v=>v+'R'}},y:{...co.scales?.y,grid:{display:false}}}}});
+  }
+}
+function renderHistoryTable(){
+  const tbody=g('hist-tbody'),empty=g('hist-empty'),lm=g('hist-load-more');
+  g('hist-count').textContent=HIST_DATA.length+' trade'+(HIST_DATA.length!==1?'s':'');
+  if(!HIST_DATA.length){tbody.innerHTML='';empty.style.display='block';lm.style.display='none';return;}
+  empty.style.display='none';
+  const visible=HIST_DATA.slice(0,HIST_SHOW);
+  tbody.innerHTML=visible.map(t=>{
+    const r=t.rResult,rD=r!=null?(r>0?'+':'')+r+'R':'—',rC=r>0?'pp':r<0?'pn':'pb';
+    return `<tr onclick="viewTrade('${t.id}')">
+      <td class="tm">${t.date||'—'}</td><td class="tb">${t.asset}</td>
+      <td><span class="tag ${t.dir==='Long'?'tl':'ts'}">${t.dir}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${t.system||'—'}</td>
+      <td class="tm">${t.entry||'—'}</td><td class="tm">${t.exit||'—'}</td>
+      <td class="tm">${t.risk?t.risk+'R':'—'}</td>
+      <td class="${rC}">${rD}</td>
+      <td><span class="tag ${t.result==='Win'?'tw':t.result==='Loss'?'tlo':'tb2'}">${t.result||'—'}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${t.rating||'—'}</td>
+      <td><button class="btn btn-xs" onclick="event.stopPropagation();openEditHistory('${t.id}')"><i class="ti ti-pencil" style="font-size:10px"></i></button></td>
+    </tr>`;
+  }).join('');
+  lm.style.display=HIST_DATA.length>HIST_SHOW?'block':'none';
+}
+function viewTrade(id){
+  const t=H.find(x=>x.id===id);if(!t)return;
+  g('td-title').textContent=`${t.asset} ${t.dir} — ${t.date||'—'}`;
+  const r=t.rResult;
+  g('td-body').innerHTML=`
+    <div class="g4" style="margin-bottom:1rem">
+      <div class="stat"><div class="stat-label">Result</div><div class="stat-val ${r>0?'pos':r<0?'neg':''}">${r!=null?(r>0?'+':'')+r+'R':'—'}</div></div>
+      <div class="stat"><div class="stat-label">Entry / Exit</div><div class="stat-val" style="font-size:16px">${t.entry||'—'} → ${t.exit||'—'}</div></div>
+      <div class="stat"><div class="stat-label">System</div><div class="stat-val" style="font-size:16px">${t.system||'—'}</div></div>
+      <div class="stat"><div class="stat-label">Rating</div><div class="stat-val" style="font-size:16px">${t.rating||'—'}/5</div></div>
+    </div>
+    ${t.thesis?`<div class="dv-label" style="margin-bottom:5px">Pre-Trade Thesis</div><div class="dv-val al" style="font-size:13px;line-height:1.7;margin-bottom:1rem">${t.thesis.replace(/\n/g,'<br>')}</div>`:''}
+    ${(t.notes||[]).length?`<div class="dv-label" style="margin-bottom:5px">Trade Commentary</div><div style="margin-bottom:1rem">${t.notes.map(n=>`<div style="font-size:12px;color:var(--text2);padding:.5rem 0;border-bottom:1px solid var(--border)">${n.text}</div>`).join('')}</div>`:''}
+    ${t.review?`<div class="dv-label" style="margin-bottom:5px">Post-Trade Review</div><div class="dv-val gl" style="font-size:13px;line-height:1.7;margin-bottom:1rem">${t.review.replace(/\n/g,'<br>')}</div>`:''}
+    ${t.closeImgKey&&IMGS[t.closeImgKey]?`<img src="${IMGS[t.closeImgKey]}" style="max-width:100%;border-radius:var(--r);border:1px solid var(--border);cursor:zoom-in" onclick="openLBdirect('${IMGS[t.closeImgKey]}')">`:''}`;
+  g('td-edit-btn').onclick=()=>{closeModal('modal-trade-detail');openEditHistory(t.id);};
+  openModal('modal-trade-detail');
+}
+function openEditHistory(id){
+  const t=H.find(x=>x.id===id);if(!t)return;
+  g('eh-id').value=id;g('eh-asset').value=t.asset||'';g('eh-dir').value=t.dir||'Long';
+  g('eh-market').value=t.market||'Crypto';g('eh-system').value=t.system||'';
+  g('eh-entry').value=t.entry||'';g('eh-stop').value=t.stop||'';g('eh-exit').value=t.exit||'';
+  g('eh-risk').value=t.risk||'';g('eh-r').value=t.rResult||'';
+  g('eh-result').value=t.result||'Win';g('eh-rating').value=t.rating||'';
+  g('eh-opened').value=t.openedAt&&typeof t.openedAt==='string'?t.openedAt:(t.openedAt?new Date(t.openedAt).toISOString().slice(0,10):'');
+  g('eh-closed').value=t.date||'';g('eh-thesis').value=t.thesis||'';g('eh-review').value=t.review||'';
+  openModal('modal-edit-history');
+}
+function saveHistoryEdit(){
+  const id=gv('eh-id');const t=H.find(x=>x.id===id);if(!t)return;
+  t.asset=gv('eh-asset').toUpperCase()||t.asset;t.dir=gv('eh-dir');t.market=gv('eh-market');
+  t.system=gv('eh-system');t.entry=gv('eh-entry');t.stop=gv('eh-stop');t.exit=gv('eh-exit');
+  t.risk=gv('eh-risk');t.rResult=parseFloat(gv('eh-r'))||null;t.result=gv('eh-result');
+  t.rating=gv('eh-rating');t.openedAt=gv('eh-opened')||t.openedAt;t.date=gv('eh-closed')||t.date;
+  t.thesis=gv('eh-thesis');t.review=gv('eh-review');
+  DB.save('history',H);closeModal('modal-edit-history');toast('Trade updated');renderHistory();
+}
+
+// ── ANALYSIS ──
+let anIdx=0,anPending={},anExisting={};
+function resetAnSecs(){anIdx=1;anPending={};anExisting={};g('an-sections').innerHTML=anSecHTML(0);}
+function anSecHTML(i){return `<div class="an-sec" data-idx="${i}">${i>0?'<div class="divider"></div>':''}<div class="fc" style="margin-bottom:.75rem"><label>${i===0?'Notes':'Section '+(i+1)}</label><textarea class="an-txt" rows="6" placeholder="Your analysis, observations, price levels, confluence..."></textarea></div><input type="file" accept="image/*" multiple id="an-fi-${i}" style="display:none" onchange="handleAnImgs(${i})"><div class="an-imgs" id="an-ig-${i}"><div class="an-img-add" onclick="g('an-fi-${i}').click()"><i class="ti ti-photo" style="font-size:20px"></i><span>Add Chart</span></div></div></div>`;}
+function addAnSec(){const i=anIdx++;g('an-sections').insertAdjacentHTML('beforeend',anSecHTML(i));}
+function handleAnImgs(idx){if(!anPending[idx])anPending[idx]=[];Array.from(g('an-fi-'+idx).files).forEach(file=>{const r=new FileReader();r.onload=e=>{const k=uid();anPending[idx].push({k,d:e.target.result});renderAnGrid(idx);};r.readAsDataURL(file);});}
+function renderAnGrid(idx){
+  const gr=g('an-ig-'+idx);if(!gr)return;
+  const ex=(anExisting[idx]||[]).filter(k=>IMGS[k]);
+  const pd=anPending[idx]||[];
+  gr.innerHTML=ex.map(k=>`<div class="img-wrap"><img class="an-img" src="${IMGS[k]}" onclick="openLB('${k}')"><button class="img-del" onclick="removeAnImg(${idx},'${k}',true)" title="Remove image">×</button></div>`).join('')
+    +pd.map(i=>`<div class="img-wrap"><img class="an-img" src="${i.d}" onclick="openLBdirect('${i.d}')"><button class="img-del" onclick="removeAnImg(${idx},'${i.k}',false)" title="Remove image">×</button></div>`).join('')
+    +`<div class="an-img-add" onclick="g('an-fi-${idx}').click()"><i class="ti ti-photo" style="font-size:20px"></i><span>Add</span></div>`;
+}
+function removeAnImg(idx,k,isExisting){
+  if(isExisting)anExisting[idx]=(anExisting[idx]||[]).filter(x=>x!==k);
+  else anPending[idx]=(anPending[idx]||[]).filter(x=>x.k!==k);
+  renderAnGrid(idx);
+}
+
+function saveAnalysis(){
+  const asset=gv('an-asset').trim();if(!asset){toast('Asset required','error');return;}
+  const secs=[];
+  document.querySelectorAll('#modal-new-analysis .an-sec').forEach(sec=>{
+    const idx=parseInt(sec.dataset.idx);const text=sec.querySelector('.an-txt').value;
+    // Preserve existing images if editing, merge with new pending
+    const newImgs=(anPending[idx]||[]).map(i=>{IMGS[i.k]=i.d;return i.k;});
+    const imgs=[...(anExisting[idx]||[]),...newImgs];
+    secs.push({text,imgs});
+  });
+  saveImgs();
+  const payload={title:gv('an-title'),asset:asset.toUpperCase(),date:gv('an-date'),bias:gv('an-bias'),tf:gv('an-tf'),sections:secs};
+  if(EDIT_ID&&!EDIT_ID.startsWith('study_')){const idx=AN.findIndex(x=>x.id===EDIT_ID);if(idx>-1)AN[idx]={...AN[idx],...payload,updatedAt:Date.now()};toast('Analysis updated');}
+  else{AN.unshift({id:uid(),...payload,createdAt:Date.now()});toast('Analysis saved');}
+  EDIT_ID=null;DB.save('analyses',AN);closeModal('modal-new-analysis');clearDraft('modal-new-analysis');
+  ['an-title','an-asset','an-tf'].forEach(k=>{if(g(k))g(k).value=''});if(g('an-bias'))g('an-bias').value='';
+  updateAnFilter();renderAnalysis();
+}
+
+let stIdx=0,stPending={},stExisting={};
+function resetStSecs(){stIdx=1;stPending={};stExisting={};g('st-sections').innerHTML=stSecHTML(0);}
+function stSecHTML(i){return `<div class="st-sec" data-idx="${i}">${i>0?'<div class="divider"></div>':''}<div class="fc" style="margin-bottom:.75rem"><label>Notes${i>0?' — Section '+(i+1):''}</label><textarea class="st-txt" rows="5" placeholder="Research notes, data, observations..."></textarea></div><input type="file" accept="image/*" multiple id="st-fi-${i}" style="display:none" onchange="handleStImgs(${i})"><div class="an-imgs" id="st-ig-${i}"><div class="an-img-add" onclick="g('st-fi-${i}').click()"><i class="ti ti-photo" style="font-size:20px"></i><span>Add Chart</span></div></div></div>`;}
+function addStSec(){const i=stIdx++;g('st-sections').insertAdjacentHTML('beforeend',stSecHTML(i));}
+function handleStImgs(idx){if(!stPending[idx])stPending[idx]=[];Array.from(g('st-fi-'+idx).files).forEach(file=>{const r=new FileReader();r.onload=e=>{const k=uid();stPending[idx].push({k,d:e.target.result});renderStGrid(idx);};r.readAsDataURL(file);});}
+function renderStGrid(idx){
+  const gr=g('st-ig-'+idx);if(!gr)return;
+  const ex=(stExisting[idx]||[]).filter(k=>IMGS[k]);
+  const pd=stPending[idx]||[];
+  gr.innerHTML=ex.map(k=>`<div class="img-wrap"><img class="an-img" src="${IMGS[k]}" onclick="openLB('${k}')"><button class="img-del" onclick="removeStImg(${idx},'${k}',true)" title="Remove image">×</button></div>`).join('')
+    +pd.map(i=>`<div class="img-wrap"><img class="an-img" src="${i.d}" onclick="openLBdirect('${i.d}')"><button class="img-del" onclick="removeStImg(${idx},'${i.k}',false)" title="Remove image">×</button></div>`).join('')
+    +`<div class="an-img-add" onclick="g('st-fi-${idx}').click()"><i class="ti ti-photo" style="font-size:20px"></i><span>Add</span></div>`;
+}
+function removeStImg(idx,k,isExisting){
+  if(isExisting)stExisting[idx]=(stExisting[idx]||[]).filter(x=>x!==k);
+  else stPending[idx]=(stPending[idx]||[]).filter(x=>x.k!==k);
+  renderStGrid(idx);
+}
+
+function saveStudy(){
+  const title=gv('st-title').trim();if(!title){toast('Title required','error');return;}
+  const secs=[];
+  document.querySelectorAll('#modal-new-study .st-sec').forEach(sec=>{
+    const idx=parseInt(sec.dataset.idx);const text=sec.querySelector('.st-txt').value;
+    const newImgs=(stPending[idx]||[]).map(i=>{IMGS[i.k]=i.d;return i.k;});
+    const imgs=[...(stExisting[idx]||[]),...newImgs];
+    secs.push({text,imgs});
+  });
+  saveImgs();
+  if(EDIT_ID?.startsWith('study_')){
+    const realId=EDIT_ID.replace('study_','');const idx=ST.findIndex(x=>x.id===realId);
+    if(idx>-1)ST[idx]={...ST[idx],title,date:gv('st-date'),covers:gv('st-covers'),sections:secs,conclusion:gv('st-conclusion'),updatedAt:Date.now()};
+    toast('Study updated');
+  }else{ST.unshift({id:uid(),title,date:gv('st-date'),covers:gv('st-covers'),sections:secs,conclusion:gv('st-conclusion'),createdAt:Date.now()});toast('Study saved');}
+  EDIT_ID=null;DB.save('studies',ST);closeModal('modal-new-study');clearDraft('modal-new-study');renderStudies();
+}
+
+function updateAnFilter(){
+  const sel=g('an-af');if(!sel)return;const cur=sel.value;
+  sel.innerHTML='<option value="">All assets</option>'+[...new Set(AN.map(a=>a.asset))].sort().map(a=>`<option ${a===cur?'selected':''}>${a}</option>`).join('');
+}
+function switchSub(e,tab){
+  document.querySelectorAll('.subtabs .subtab').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');
+  g('an-subtab').style.display=tab==='an'?'block':'none';g('study-subtab').style.display=tab==='study'?'block':'none';
+  if(tab==='an')renderAnalysis();else renderStudies();
+}
+function toggleAn(id){const el=g('ab-'+id);if(el)el.classList.toggle('open');}
+function delAnalysis(id){if(!confirm('Delete?'))return;AN=AN.filter(x=>x.id!==id);DB.save('analyses',AN);renderAnalysis();toast('Deleted');}
+function delStudy(id){if(!confirm('Delete?'))return;ST=ST.filter(x=>x.id!==id);DB.save('studies',ST);renderStudies();toast('Deleted');}
+
+function editAnalysis(id){
+  const a=AN.find(x=>x.id===id);if(!a)return;
+  EDIT_ID=id;clearDraft('modal-new-analysis');anPending={};
+  resetAnSecs();
+  g('an-title').value=a.title||'';g('an-asset').value=a.asset||'';g('an-date').value=a.date||today();g('an-bias').value=a.bias||'';g('an-tf').value=a.tf||'';
+  const secs=a.sections||[];
+  if(secs.length){anIdx=secs.length;g('an-sections').innerHTML=secs.map((_,i)=>anSecHTML(i)).join('');
+    secs.forEach((s,i)=>{const el=document.querySelectorAll('#modal-new-analysis .an-sec .an-txt')[i];if(el)el.value=s.text||'';
+      anExisting[i]=[...(s.imgs||[])];renderAnGrid(i);
+    });
+  }
+  g('modal-new-analysis').querySelector('.modal-title').textContent='Edit Analysis';
+  openModal('modal-new-analysis');
+}
+function editStudy(id){
+  const s=ST.find(x=>x.id===id);if(!s)return;
+  EDIT_ID='study_'+id;clearDraft('modal-new-study');stPending={};
+  resetStSecs();g('st-title').value=s.title||'';g('st-date').value=s.date||'';g('st-covers').value=s.covers||'';g('st-conclusion').value=s.conclusion||'';
+  const secs=s.sections||[];
+  if(secs.length){stIdx=secs.length;g('st-sections').innerHTML=secs.map((_,i)=>stSecHTML(i)).join('');
+    secs.forEach((sec,i)=>{const el=document.querySelectorAll('#modal-new-study .st-sec .st-txt')[i];if(el)el.value=sec.text||'';
+      stExisting[i]=[...(sec.imgs||[])];renderStGrid(i);
+    });
+  }
+  g('modal-new-study').querySelector('.modal-title').textContent='Edit Study';
+  openModal('modal-new-study');
+}
+
+function renderAnalysis(){
+  updateAnFilter();
+  const search=gv('an-search').toLowerCase(),asset=gv('an-af');
+  let f=AN.filter(a=>{
+    if(asset&&a.asset!==asset)return false;
+    if(search&&!a.asset?.toLowerCase().includes(search)&&!(a.title||'').toLowerCase().includes(search)&&!(a.sections||[]).some(s=>s.text.toLowerCase().includes(search)))return false;
+    return true;
+  });
+  const list=g('analysis-list'),empty=g('analysis-empty');
+  if(!f.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  const bc={'Bullish':'var(--green)','Bearish':'var(--red)','Neutral':'var(--muted)','Range-bound':'var(--amber)'};
+  list.innerHTML=f.map(a=>{
+    const secH=(a.sections||[]).map((s,i)=>`${i>0?'<div class="divider"></div>':''}${s.text?`<div style="font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:.75rem">${s.text.replace(/\n/g,'<br>')}</div>`:''}${s.imgs?.length?`<div class="an-imgs">${s.imgs.map(k=>IMGS[k]?`<img class="an-img" src="${IMGS[k]}" onclick="openLBdirect('${IMGS[k]}')">`:'').join('')}</div>`:''}`).join('');
+    const hdL=a.title?`<span style="font-size:14px;font-weight:700;color:var(--text)">${a.title}</span><span style="color:var(--border2)"> · </span>`:'';
+    return `<div class="an-entry"><div class="an-hd" onclick="toggleAn('${a.id}')">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${hdL}<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:${a.title?'var(--text2)':'var(--text)'}">${a.asset}</span>${a.tf?`<span style="font-family:var(--mono);font-size:10px;color:var(--dim)">${a.tf}</span>`:''}<span style="font-family:var(--mono);font-size:10px;color:var(--dim)">${a.date||'—'}</span>${a.bias?`<span style="font-size:11px;color:${bc[a.bias]||'var(--muted)'};font-weight:600">${a.bias}</span>`:''}</div>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <button class="btn btn-xs" onclick="event.stopPropagation();editAnalysis('${a.id}')" style="color:var(--accent);border-color:rgba(91,138,240,.3)"><i class="ti ti-pencil" style="font-size:11px"></i></button>
+        <button class="btn btn-xs btn-d" onclick="event.stopPropagation();delAnalysis('${a.id}')"><i class="ti ti-trash" style="font-size:11px"></i></button>
+        <i class="ti ti-chevron-down" style="color:var(--dim);font-size:14px"></i>
+      </div>
+    </div><div class="an-body" id="ab-${a.id}">${secH}</div></div>`;
+  }).join('');
+}
+function renderStudies(){
+  const search=gv('study-search').toLowerCase();
+  let f=ST.filter(s=>!search||(s.title||'').toLowerCase().includes(search)||(s.covers||'').toLowerCase().includes(search));
+  const list=g('study-list'),empty=g('study-empty');
+  if(!f.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  list.innerHTML=f.map(s=>{
+    const secH=(s.sections||[]).map((sec,i)=>`${i>0?'<div class="divider"></div>':''}${sec.text?`<div style="font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:.75rem">${sec.text.replace(/\n/g,'<br>')}</div>`:''}${sec.imgs?.length?`<div class="an-imgs">${sec.imgs.map(k=>IMGS[k]?`<img class="an-img" src="${IMGS[k]}" onclick="openLBdirect('${IMGS[k]}')">`:'').join('')}</div>`:''}`).join('');
+    return `<div class="an-entry"><div class="an-hd" onclick="toggleAn('st-${s.id}')">
+      <div><span style="font-size:14px;font-weight:700;color:var(--text)">${s.title}</span><span style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-left:.75rem">${s.date||'—'}</span>${s.covers?`<div style="font-size:11px;color:var(--muted);margin-top:3px">${s.covers}</div>`:''}</div>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <button class="btn btn-xs" onclick="event.stopPropagation();editStudy('${s.id}')" style="color:var(--accent);border-color:rgba(91,138,240,.3)"><i class="ti ti-pencil" style="font-size:11px"></i></button>
+        <button class="btn btn-xs btn-d" onclick="event.stopPropagation();delStudy('${s.id}')"><i class="ti ti-trash" style="font-size:11px"></i></button>
+        <i class="ti ti-chevron-down" style="color:var(--dim);font-size:14px"></i>
+      </div>
+    </div><div class="an-body" id="ab-st-${s.id}">${secH}${s.conclusion?`<div class="divider"></div><div class="dv-label" style="margin-bottom:5px">Conclusion</div><div class="dv-val gl" style="font-size:13px;line-height:1.7">${s.conclusion.replace(/\n/g,'<br>')}</div>`:''}</div></div>`;
+  }).join('');
+}
+
+// ── SYSTEMS ──
+let SY_OPEN={};
+let SY_IMG_REMOVE=false;
+function previewSysImg(){const file=g('sy-img').files[0];if(!file)return;SY_IMG_REMOVE=false;g('sy-img-name').textContent=file.name;const r=new FileReader();r.onload=e=>{g('sy-img-preview').src=e.target.result;g('sy-img-preview').style.display='block';g('sy-img-remove').style.display='inline-flex';};r.readAsDataURL(file);}
+function removeSysImg(){
+  SY_IMG_REMOVE=true;g('sy-img').value='';g('sy-img-name').textContent='';
+  g('sy-img-preview').style.display='none';g('sy-img-remove').style.display='none';
+}
+
+function switchSysTab(e,tab){
+  document.querySelectorAll('#sys-subtabs .subtab').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');
+  g('sys-systems-tab').style.display=tab==='systems'?'block':'none';g('sys-ideas-tab').style.display=tab==='ideas'?'block':'none';
+  g('sys-idea-btn').style.display=tab==='ideas'?'inline-flex':'none';g('sys-add-btn').style.display=tab==='systems'?'inline-flex':'none';
+  if(tab==='ideas')renderSysIdeas();
+}
+let siIdx=0;
+function siSecHTML(i){return `<div class="si-sec" data-idx="${i}">${i>0?'<div class="divider"></div>':''}<div class="fc"><label>Notes${i>0?' '+i:''}</label><textarea class="si-txt" rows="5" placeholder="Describe the idea, what you've observed, why it could work..."></textarea></div></div>`;}
+function addSiSec(){const i=siIdx++;g('si-sections').insertAdjacentHTML('beforeend',siSecHTML(i));}
+
+function saveSysIdea(){
+  const title=gv('si-title').trim();if(!title){toast('Title required','error');return;}
+  const secs=[];document.querySelectorAll('.si-sec').forEach(sec=>secs.push({text:sec.querySelector('.si-txt').value}));
+  if(EDIT_ID?.startsWith('si_')){const realId=EDIT_ID.replace('si_','');const idx=SI.findIndex(x=>x.id===realId);if(idx>-1)SI[idx]={...SI[idx],title,date:gv('si-date'),sections:secs,updatedAt:Date.now()};toast('Idea updated');}
+  else{SI.unshift({id:uid(),title,date:gv('si-date'),sections:secs,createdAt:Date.now()});toast('Idea saved');}
+  EDIT_ID=null;DB.save('sysideas',SI);closeModal('modal-new-sys-idea');clearDraft('modal-new-sys-idea');g('si-title').value='';renderSysIdeas();
+}
+function renderSysIdeas(){
+  const list=g('sys-ideas-list'),empty=g('sys-ideas-empty');
+  if(!SI.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  list.innerHTML=SI.map(s=>{
+    const secH=(s.sections||[]).map((sec,i)=>`${i>0?'<div class="divider"></div>':''}${sec.text?`<div style="font-size:13px;line-height:1.7;color:var(--text2)">${sec.text.replace(/\n/g,'<br>')}</div>`:''}`).join('');
+    return `<div class="an-entry"><div class="an-hd" onclick="toggleAn('si-${s.id}')">
+      <div><span style="font-size:14px;font-weight:700;color:var(--text)">${s.title}</span><span style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-left:.75rem">${s.date||'—'}</span></div>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <button class="btn btn-xs" onclick="event.stopPropagation();editSysIdea('${s.id}')" style="color:var(--accent);border-color:rgba(91,138,240,.3)"><i class="ti ti-pencil" style="font-size:11px"></i></button>
+        <button class="btn btn-xs btn-d" onclick="event.stopPropagation();delSysIdea('${s.id}')"><i class="ti ti-trash" style="font-size:11px"></i></button>
+        <i class="ti ti-chevron-down" style="color:var(--dim);font-size:14px"></i>
+      </div>
+    </div><div class="an-body" id="ab-si-${s.id}">${secH}</div></div>`;
+  }).join('');
+}
+function delSysIdea(id){if(!confirm('Delete?'))return;SI=SI.filter(x=>x.id!==id);DB.save('sysideas',SI);renderSysIdeas();toast('Deleted');}
+function editSysIdea(id){
+  const s=SI.find(x=>x.id===id);if(!s)return;EDIT_ID='si_'+id;clearDraft('modal-new-sys-idea');
+  siIdx=1;g('si-title').value=s.title||'';g('si-date').value=s.date||'';
+  const secs=s.sections||[];siIdx=secs.length||1;
+  g('si-sections').innerHTML=secs.length?secs.map((_,i)=>siSecHTML(i)).join(''):siSecHTML(0);
+  secs.forEach((sec,i)=>{const el=document.querySelectorAll('.si-sec .si-txt')[i];if(el)el.value=sec.text||'';});
+  g('modal-new-sys-idea').querySelector('.modal-title').textContent='Edit Idea';openModal('modal-new-sys-idea');
+}
+
+function saveSystem(){
+  const name=gv('sy-name').trim();if(!name){toast('Name required','error');return;}
+  const imgFile=g('sy-img').files[0];
+  function doSave(imgKey){
+    const data={name,markets:gv('sy-markets'),tf:gv('sy-tf'),status:gv('sy-status'),entryRules:gv('sy-entry'),sl:gv('sy-sl'),tp:gv('sy-tp'),invalid:gv('sy-invalid'),notes:gv('sy-notes'),wr:gv('sy-wr'),awr:gv('sy-awr'),alr:gv('sy-alr'),ev:gv('sy-ev')};
+    if(EDIT_ID?.startsWith('sys_')){
+      const realId=EDIT_ID.replace('sys_','');const idx=SY.findIndex(x=>x.id===realId);
+      if(idx>-1)SY[idx]={...SY[idx],...data,imgKey:imgKey||(SY_IMG_REMOVE?null:SY[idx].imgKey),updatedAt:Date.now()};toast('System updated');
+    }else{SY.unshift({id:uid(),...data,imgKey,createdAt:Date.now()});toast('System saved');}
+    EDIT_ID=null;DB.save('systems',SY);closeModal('modal-new-system');
+    ['sy-name','sy-markets','sy-tf','sy-entry','sy-sl','sy-tp','sy-invalid','sy-notes','sy-wr','sy-awr','sy-alr','sy-ev'].forEach(k=>{const el=g(k);if(el)el.value='';});
+    g('sy-img-name').textContent='';g('sy-img-preview').style.display='none';if(g('sy-img'))g('sy-img').value='';
+    g('sy-img-remove').style.display='none';SY_IMG_REMOVE=false;
+    renderSystems();
+  }
+  if(imgFile){const r=new FileReader();r.onload=e=>{const k=uid();IMGS[k]=e.target.result;saveImgs();doSave(k);};r.readAsDataURL(imgFile);}
+  else doSave(null);
+}
+function delSystem(id){if(!confirm('Delete?'))return;SY=SY.filter(x=>x.id!==id);DB.save('systems',SY);renderSystems();toast('Deleted');}
+function editSystem(id){
+  const s=SY.find(x=>x.id===id);if(!s)return;EDIT_ID='sys_'+id;
+  g('sy-name').value=s.name||'';g('sy-markets').value=s.markets||'';g('sy-tf').value=s.tf||'';g('sy-status').value=s.status||'Active';
+  g('sy-entry').value=s.entryRules||'';g('sy-sl').value=s.sl||'';g('sy-tp').value=s.tp||'';g('sy-invalid').value=s.invalid||'';g('sy-notes').value=s.notes||'';
+  g('sy-wr').value=s.wr||'';g('sy-awr').value=s.awr||'';g('sy-alr').value=s.alr||'';g('sy-ev').value=s.ev||'';
+  SY_IMG_REMOVE=false;
+  if(s.imgKey&&IMGS[s.imgKey]){g('sy-img-preview').src=IMGS[s.imgKey];g('sy-img-preview').style.display='block';g('sy-img-name').textContent='(existing image)';g('sy-img-remove').style.display='inline-flex';}
+  else{g('sy-img-preview').style.display='none';g('sy-img-remove').style.display='none';g('sy-img-name').textContent='';}
+  g('modal-new-system').querySelector('.modal-title').textContent='Edit System';openModal('modal-new-system');
+}
+function renderSystems(){
+  const list=g('systems-list'),empty=g('systems-empty');
+  if(!SY.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  const stag={'Active':'tsa','Testing':'tst','Retired':'tsr','Under Review':'tsu'};
+  list.innerHTML=SY.map(s=>{
+    const isOpen=SY_OPEN[s.id]!==false;
+    const st=H.filter(t=>t.system===s.name);
+    const sw=st.filter(t=>t.result==='Win').length,sl2=st.filter(t=>t.result==='Loss').length;
+    const sc=st.filter(t=>t.result!=='Open');
+    const swr=s.wr||(sc.length?((sw/sc.length)*100).toFixed(0):0);
+    const sR=st.reduce((sum,t)=>sum+(t.rResult||0),0);
+    const lastUsed=st.length?st.sort((a,b)=>new Date(b.date)-new Date(a.date))[0].date:null;
+    const rules=s.entryRules?s.entryRules.split('\n').filter(r=>r.trim()).map((r,i)=>`<li><span class="rule-n">${String(i+1).padStart(2,'0')}</span>${r}</li>`).join(''):'';
+    return `<div class="sys-card">
+      <div class="sys-hd" onclick="toggleSysCard('${s.id}')">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="sys-name">${s.name}</span><span class="tag ${stag[s.status]||''}">${s.status}</span></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:1rem">${s.markets?`<span>${s.markets}</span>`:''}${s.tf?`<span>${s.tf}</span>`:''}</div>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center" onclick="event.stopPropagation()">
+          <button class="btn btn-sm" onclick="editSystem('${s.id}')"><i class="ti ti-pencil" style="font-size:12px"></i></button>
+          <button class="btn btn-sm btn-d" onclick="delSystem('${s.id}')"><i class="ti ti-trash" style="font-size:12px"></i></button>
+          <i class="ti ti-chevron-${isOpen?'up':'down'}" style="color:var(--dim);font-size:14px;margin-left:4px"></i>
+        </div>
+      </div>
+      <div id="sysbody-${s.id}" style="display:${isOpen?'block':'none'}">
+        ${s.imgKey&&IMGS[s.imgKey]?`<div style="border-bottom:1px solid var(--border)"><img src="${IMGS[s.imgKey]}" style="width:100%;max-height:240px;object-fit:cover;display:block;cursor:zoom-in" onclick="openLBdirect('${IMGS[s.imgKey]}')"></div>`:''}
+        <div class="sys-body">
+          ${rules?`<div class="fc" style="margin-bottom:1rem"><label>Entry Rules</label><ul class="rules-list">${rules}</ul></div>`:''}
+          <div class="g2" style="margin-bottom:1rem">
+            ${s.sl?`<div class="fc"><label>Stop Loss Rule</label><div class="dv-val rl" style="font-size:12px">${s.sl.replace(/\n/g,'<br>')}</div></div>`:''}
+            ${s.tp?`<div class="fc"><label>Exit / TP Rule</label><div class="dv-val gl" style="font-size:12px">${s.tp.replace(/\n/g,'<br>')}</div></div>`:''}
+          </div>
+          ${s.invalid?`<div class="fc" style="margin-bottom:1rem"><label>Invalidation</label><div class="dv-val" style="font-size:12px">${s.invalid.replace(/\n/g,'<br>')}</div></div>`:''}
+          ${s.notes?`<div class="fc" style="margin-bottom:1rem"><label>Notes & Edge</label><div class="dv-val" style="font-size:12px">${s.notes.replace(/\n/g,'<br>')}</div></div>`:''}
+        </div>
+        <div class="sys-stats">
+          <div><div class="ss-label">Trades</div><div class="ss-val">${st.length}</div></div>
+          <div><div class="ss-label">Win Rate</div><div class="ss-val" style="color:${swr>=50?'var(--green)':'var(--red)'}">${swr}%</div></div>
+          <div><div class="ss-label">Total R</div><div class="ss-val" style="color:${sR>=0?'var(--green)':'var(--red)'}">${sR>=0?'+':''}${sR.toFixed(2)}R</div></div>
+          <div><div class="ss-label">W · L</div><div class="ss-val">${sw} · ${sl2}</div></div>
+          ${s.awr?`<div><div class="ss-label">Avg Win R</div><div class="ss-val" style="color:var(--green)">+${s.awr}R</div></div>`:''}
+          ${s.alr?`<div><div class="ss-label">Avg Loss R</div><div class="ss-val" style="color:var(--red)">${s.alr}R</div></div>`:''}
+          ${s.ev?`<div><div class="ss-label">EV</div><div class="ss-val" style="color:${parseFloat(s.ev)>=0?'var(--green)':'var(--red)'}">${s.ev}</div></div>`:''}
+          ${lastUsed?`<div><div class="ss-label">Last Used</div><div class="ss-val" style="font-size:12px">${lastUsed}</div></div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleSysCard(id){SY_OPEN[id]=SY_OPEN[id]===false?true:false;renderSystems();}
+
+// ── SPOT ──
+function calcSpotQty(){
+  const usd=parseFloat(gv('sp-usd')),price=parseFloat(gv('sp-price'));
+  if(usd&&price>0){const el=g('sp-qty');if(el)el.value=+(usd/price).toFixed(8);}
+}
+function saveSpot(){
+  const asset=gv('sp-asset').trim();if(!asset){toast('Asset required','error');return;}
+  SP.unshift({id:uid(),asset:asset.toUpperCase(),date:gv('sp-date'),usd:parseFloat(gv('sp-usd'))||0,price:parseFloat(gv('sp-price'))||0,qty:parseFloat(gv('sp-qty'))||0,notes:gv('sp-notes'),createdAt:Date.now()});
+  DB.save('spots',SP);closeModal('modal-new-spot');['sp-asset','sp-usd','sp-price','sp-qty','sp-notes'].forEach(k=>{const el=g(k);if(el)el.value='';});toast('Purchase logged');renderSpot();
+}
+function delSpotEntry(id){if(!confirm('Delete this entry?'))return;SP=SP.filter(x=>x.id!==id);DB.save('spots',SP);renderSpot();toast('Entry deleted');}
+function openSellModal(asset){
+  g('sell-asset').value=asset;g('sell-spot-title').textContent=`Sell — ${asset}`;
+  g('sell-date').value=today();g('sell-price').value='';g('sell-notes').value='';g('sell-pnl-preview').style.display='none';
+  openModal('modal-sell-spot');
+}
+function previewSellPnl(){
+  const asset=gv('sell-asset'),sellPrice=parseFloat(gv('sell-price'));if(!sellPrice)return;
+  const buys=SP.filter(s=>s.asset===asset&&!s.sold);
+  const tU=buys.reduce((s,b)=>s+b.usd,0),tQ=buys.reduce((s,b)=>s+b.qty,0);
+  if(!tQ)return;
+  const pnl=tQ*sellPrice-tU,pct=tU>0?(pnl/tU*100).toFixed(2):0;
+  g('sell-pnl-preview').style.display='block';
+  g('sell-pnl-val').textContent=(pnl>=0?'+':'')+'$'+pnl.toFixed(2);g('sell-pnl-val').style.color=pnl>=0?'var(--green)':'var(--red)';
+  g('sell-pnl-pct').textContent=(pct>=0?'+':'')+pct+'%';g('sell-pnl-pct').style.color=pct>=0?'var(--green)':'var(--red)';
+}
+function sellSpot(){
+  const asset=gv('sell-asset'),sellPrice=parseFloat(gv('sell-price'))||0,sellDate=gv('sell-date');
+  const buys=SP.filter(s=>s.asset===asset&&!s.sold);
+  const tU=buys.reduce((s,b)=>s+b.usd,0),tQ=buys.reduce((s,b)=>s+b.qty,0);
+  const wavg=buys.reduce((s,b)=>{const pp=b.price>0?b.price:(b.qty>0?b.usd/b.qty:0);return s+pp*b.qty;},0);
+  const avgB=tQ>0?wavg/tQ:0;
+  const pnl=tQ*sellPrice-tU,pnlPct=tU>0?((pnl/tU)*100).toFixed(2):0;
+  H.unshift({id:uid(),asset,dir:'Long',market:'Spot',system:'Spot',entry:avgB.toFixed(4),stop:'',exit:sellPrice,risk:'',rResult:null,result:pnl>=0?'Win':'Loss',rating:'',thesis:`Spot sale — ${tQ} ${asset} at avg $${avgB.toFixed(4)}`,notes:[],review:gv('sell-notes'),date:sellDate,openedAt:sellDate,closedAt:Date.now(),createdAt:Date.now(),spotPnL:pnl.toFixed(2),spotPnLPct:pnlPct});
+  DB.save('history',H);
+  buys.forEach(b=>{b.sold=true;b.soldAt=Date.now();b.sellPrice=sellPrice;b.sellDate=sellDate;b.pnl=pnl.toFixed(2);b.pnlPct=pnlPct;});DB.save('spots',SP);
+  closeModal('modal-sell-spot');toast(`${asset} sold · P&L: ${pnl>=0?'+':''}$${pnl.toFixed(2)} (${pnlPct}%)`);renderSpot();
+}
+function switchSpotTab(e,tab){
+  document.querySelectorAll('.subtabs .subtab').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');
+  g('spot-active-tab').style.display=tab==='active'?'block':'none';g('spot-history-tab').style.display=tab==='history'?'block':'none';
+  if(tab==='history')renderSpotHistory();
+}
+function fmtPrice(p){if(!p||p===0)return '—';const abs=Math.abs(p);if(abs>=10000)return '$'+p.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});if(abs>=1)return '$'+p.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});if(abs>=0.01)return '$'+p.toFixed(4);return '$'+p.toFixed(8);}
+
+function renderSpot(){
+  const list=g('spot-list'),empty=g('spot-empty');
+  const active=SP.filter(s=>!s.sold);
+  if(!active.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  const byAsset={};active.forEach(s=>{if(!byAsset[s.asset])byAsset[s.asset]=[];byAsset[s.asset].push(s);});
+  // Portfolio total
+  const totalInvested=active.reduce((s,b)=>s+b.usd,0);
+  const totalAssets=Object.keys(byAsset).length;
+  let html=`<div class="g3 mb">
+    <div class="stat acc"><div class="stat-label">Total Invested</div><div class="stat-val">$${totalInvested.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div><div class="stat-sub">${totalAssets} asset${totalAssets!==1?'s':''}</div></div>
+    <div class="stat"><div class="stat-label">Positions</div><div class="stat-val">${active.length}</div><div class="stat-sub">total purchase entries</div></div>
+    <div class="stat"><div class="stat-label">Assets Held</div><div class="stat-val">${totalAssets}</div><div class="stat-sub">${Object.keys(byAsset).join(', ')}</div></div>
+  </div>`;
+  html+=Object.entries(byAsset).map(([asset,buys])=>{
+    const tU=buys.reduce((s,b)=>s+b.usd,0),tQ=buys.reduce((s,b)=>s+b.qty,0);
+    const wavg=buys.reduce((s,b)=>{const pp=b.price>0?b.price:(b.qty>0?b.usd/b.qty:0);return s+pp*b.qty;},0);
+    const avg=tQ>0?wavg/tQ:0;
+    const rows=buys.map(b=>`<tr>
+      <td class="tm">${b.date||'—'}</td>
+      <td class="tm">$${b.usd.toFixed(2)}</td>
+      <td class="tm">${b.qty} ${asset}</td>
+      <td class="tm" style="color:var(--text)">${fmtPrice(b.price||0)}</td>
+      <td style="font-size:12px;color:var(--muted);max-width:200px">${b.notes||'—'}</td>
+      <td><button class="btn btn-xs btn-d" onclick="delSpotEntry('${b.id}')"><i class="ti ti-trash" style="font-size:11px"></i></button></td>
+    </tr>`).join('');
+    return `<div class="card mb">
+      <div class="card-hd">
+        <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+          <span style="font-size:16px;font-weight:800;color:var(--text);font-family:var(--mono)">${asset}</span>
+          <div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Avg Buy Price (Cost Basis)</div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--accent)">${fmtPrice(avg)}</div><div style="font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:2px">$${tU.toFixed(0)} ÷ ${tQ} = breakeven price</div></div>
+          <div style="display:flex;gap:1.5rem">
+            <div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Total Invested</div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text)">$${tU.toFixed(2)}</div></div>
+            <div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Total Held</div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text)">${tQ} ${asset}</div></div>
+            <div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Purchases</div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text)">${buys.length}</div></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:.5rem">
+          <button class="btn btn-sm" onclick="openModal('modal-new-spot')"><i class="ti ti-plus" style="font-size:12px"></i> Add Buy</button>
+          <button class="btn btn-sm btn-s" onclick="openSellModal('${asset}')"><i class="ti ti-cash" style="font-size:12px"></i> Sell All</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Spent</th><th>Amount</th><th>Buy Price</th><th>Notes</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+      </div>
+    </div>`;
+  }).join('');
+  list.innerHTML=html;
+}
+function renderSpotHistory(){
+  const sold=SP.filter(s=>s.sold);const list=g('spot-hist-list'),empty=g('spot-hist-empty');
+  if(!sold.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  const byAsset={};sold.forEach(s=>{if(!byAsset[s.asset])byAsset[s.asset]=[];byAsset[s.asset].push(s);});
+  list.innerHTML=Object.entries(byAsset).map(([asset,buys])=>{
+    const rows=buys.map(b=>`<tr><td class="tm">${b.date||'—'}</td><td class="tm">${b.sellDate||'—'}</td><td class="tm">$${b.usd.toFixed(2)}</td><td class="tm">${fmtPrice(b.price||0)}</td><td class="tm">${fmtPrice(b.sellPrice||0)}</td><td class="${parseFloat(b.pnl)>=0?'pp':'pn'}">${parseFloat(b.pnl)>=0?'+':''}$${parseFloat(b.pnl||0).toFixed(2)}</td><td class="${parseFloat(b.pnlPct)>=0?'pp':'pn'}">${parseFloat(b.pnlPct||0).toFixed(2)}%</td></tr>`).join('');
+    return `<div class="card mb"><div class="card-hd"><span style="font-size:15px;font-weight:700;color:var(--text)">${asset} — Sold</span></div><div class="card-body"><div class="tbl-wrap"><table><thead><tr><th>Buy Date</th><th>Sell Date</th><th>Invested</th><th>Buy Price</th><th>Sell Price</th><th>P&L $</th><th>Return %</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
+  }).join('');
+}
+
+// ── BACKTEST ──
+function renderBacktest(){
+  const sel=g('bt-log-sel');if(!sel)return;
+  const cur=ACTIVE_BTL;
+  sel.innerHTML='<option value="">Select a backtest log...</option>'+BTL.map(l=>`<option value="${l.id}" ${l.id===cur?'selected':''}>${l.name}</option>`).join('');
+  if(ACTIVE_BTL&&BTL.find(l=>l.id===ACTIVE_BTL)){g('bt-empty-state').style.display='none';g('bt-content').style.display='block';renderBtStats();renderBtTrades();}
+  else{g('bt-empty-state').style.display='block';g('bt-content').style.display='none';}
+}
+function switchBtLog(){
+  ACTIVE_BTL=gv('bt-log-sel');DB.save('activeBtl',ACTIVE_BTL);
+  if(ACTIVE_BTL&&BTL.find(l=>l.id===ACTIVE_BTL)){g('bt-empty-state').style.display='none';g('bt-content').style.display='block';renderBtStats();renderBtTrades();}
+  else{g('bt-empty-state').style.display='block';g('bt-content').style.display='none';}
+}
+function createBtLog(){
+  const name=gv('btl-name').trim();if(!name){toast('Name required','error');return;}
+  const log={id:uid(),name,date:gv('btl-date'),rules:gv('btl-rules'),markets:gv('btl-markets'),createdAt:Date.now()};
+  BTL.unshift(log);DB.save('btlogs',BTL);ACTIVE_BTL=log.id;DB.save('activeBtl',ACTIVE_BTL);
+  closeModal('modal-new-bt-log');['btl-name','btl-rules','btl-markets'].forEach(k=>{const el=g(k);if(el)el.value='';});
+  toast('Backtest log created');renderBacktest();
+}
+function deleteBtLog(){
+  if(!ACTIVE_BTL||!confirm('Delete this entire backtest log and all its trades?'))return;
+  BTL=BTL.filter(l=>l.id!==ACTIVE_BTL);BTA=BTA.filter(t=>t.logId!==ACTIVE_BTL);
+  DB.save('btlogs',BTL);DB.save('bttrades',BTA);ACTIVE_BTL='';DB.save('activeBtl','');
+  toast('Log deleted');renderBacktest();
+}
+let bwC=null,bpC=null;
+function renderBtStats(){
+  const log=BTL.find(l=>l.id===ACTIVE_BTL);if(!log)return;
+  g('bt-log-title').textContent=log.name;
+  const trades=BTA.filter(t=>t.logId===ACTIVE_BTL);
+  const wins=trades.filter(t=>t.result==='Win'),losses=trades.filter(t=>t.result==='Loss'),bes=trades.filter(t=>t.result==='Breakeven');
+  const wr=trades.length?((wins.length/trades.length)*100).toFixed(1):0;
+  const tR=+trades.reduce((s,t)=>s+t.r,0).toFixed(2);
+  const awR=wins.length?(wins.reduce((s,t)=>s+t.r,0)/wins.length).toFixed(2):0;
+  const alR=losses.length?(losses.reduce((s,t)=>s+t.r,0)/losses.length).toFixed(2):0;
+  g('bt-stats').innerHTML=`
+    <div class="stat"><div class="stat-label">Total Trades</div><div class="stat-val">${trades.length}</div></div>
+    <div class="stat"><div class="stat-label">Win Rate</div><div class="stat-val">${wr}%</div><div class="stat-sub">${wins.length}W · ${losses.length}L · ${bes.length}BE</div></div>
+    <div class="stat ${tR>=0?'pos':'neg'}"><div class="stat-label">Total R</div><div class="stat-val">${tR>=0?'+':''}${tR}R</div></div>
+    <div class="stat pos"><div class="stat-label">Avg Win R</div><div class="stat-val">+${awR}R</div></div>
+    <div class="stat neg"><div class="stat-label">Avg Loss R</div><div class="stat-val">${alR}R</div></div>`;
+  const sorted=[...trades].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  if(bwC)bwC.destroy();
+  bwC=new Chart(g('bt-wl-chart').getContext('2d'),{type:'doughnut',data:{labels:['Win','Loss','BE'],datasets:[{data:[wins.length,losses.length,bes.length],backgroundColor:['#2ECC8E','#E05555','#D4A843'],borderWidth:0,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#8090A8',font:{family:"'IBM Plex Mono'",size:10},boxWidth:10,padding:10}},tooltip:{backgroundColor:'#232C40',borderColor:'#384A6A',borderWidth:1,bodyColor:'#F0EEE9'}}}});
+  let cum=0;const pd=sorted.map(t=>{cum+=t.r;return +cum.toFixed(2);});
+  if(bpC)bpC.destroy();
+  bpC=new Chart(g('bt-pnl-chart').getContext('2d'),{type:'line',data:{labels:sorted.map(t=>t.asset||t.date),datasets:[{data:pd,borderColor:cum>=0?'#2ECC8E':'#E05555',backgroundColor:cum>=0?'rgba(46,204,142,0.08)':'rgba(224,85,85,0.08)',fill:true,tension:.35,pointRadius:3,pointBackgroundColor:cum>=0?'#2ECC8E':'#E05555'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#232C40',borderColor:'#384A6A',borderWidth:1,bodyColor:'#F0EEE9',callbacks:{label:c=>c.raw+'R'}}},scales:{x:{grid:{color:'rgba(91,138,240,0.06)'},ticks:{color:'var(--dim)',font:{family:"'IBM Plex Mono'",size:9},maxTicksLimit:8}},y:{grid:{color:'rgba(91,138,240,0.06)'},ticks:{color:'var(--dim)',font:{family:"'IBM Plex Mono'",size:9},callback:v=>v+'R'}}}}});
+}
+function renderBtTrades(){
+  const dirF=gv('bt-dir-f'),resF=gv('bt-res-f');
+  let trades=BTA.filter(t=>t.logId===ACTIVE_BTL);
+  if(dirF)trades=trades.filter(t=>t.dir===dirF);if(resF)trades=trades.filter(t=>t.result===resF);
+  const tbody=g('bt-tbody'),empty=g('bt-trades-empty');
+  if(!trades.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  tbody.innerHTML=trades.map(t=>`<tr>
+    <td class="tm">${t.date||'—'}</td>
+    <td class="tb">${t.asset||'—'}</td>
+    <td><span class="tag ${t.dir==='Long'?'tl':'ts'}">${t.dir}</span></td>
+    <td class="tm">${t.risk}R</td>
+    <td><span class="tag ${t.result==='Win'?'tw':t.result==='Loss'?'tlo':'tb2'}">${t.result}</span></td>
+    <td class="${t.r>0?'pp':t.r<0?'pn':'pb'}">${t.r>0?'+':''}${t.r}R</td>
+    <td style="font-size:12px;color:var(--muted);max-width:200px">${t.notes||'—'}</td>
+    <td style="display:flex;gap:4px">
+      <button class="btn btn-xs" onclick="editBtTrade('${t.id}')"><i class="ti ti-pencil" style="font-size:10px"></i></button>
+      <button class="btn btn-xs btn-d" onclick="delBt('${t.id}')"><i class="ti ti-trash" style="font-size:10px"></i></button>
+    </td>
+  </tr>`).join('');
+}
+function saveBtTrade(){
+  const asset=gv('bt-asset').trim();if(!asset){toast('Asset required','error');return;}
+  const editId=gv('bt-edit-id');
+  if(editId){
+    const t=BTA.find(x=>x.id===editId);
+    if(t){t.asset=asset.toUpperCase();t.date=gv('bt-dt');t.dir=gv('bt-dir');t.risk=parseFloat(gv('bt-risk'))||1;t.result=gv('bt-result');t.r=parseFloat(gv('bt-r'))||0;t.notes=gv('bt-notes');t.updatedAt=Date.now();}
+    toast('Trade updated');
+  }else{
+    BTA.unshift({id:uid(),logId:ACTIVE_BTL,asset:asset.toUpperCase(),date:gv('bt-dt'),dir:gv('bt-dir'),risk:parseFloat(gv('bt-risk'))||1,result:gv('bt-result'),r:parseFloat(gv('bt-r'))||0,notes:gv('bt-notes'),createdAt:Date.now()});
+    toast('Trade logged');
+  }
+  DB.save('bttrades',BTA);closeModal('modal-new-bt');
+  ['bt-asset','bt-notes','bt-r','bt-risk','bt-edit-id'].forEach(k=>{const el=g(k);if(el)el.value='';});
+  renderBtStats();renderBtTrades();
+}
+function editBtTrade(id){
+  const t=BTA.find(x=>x.id===id);if(!t)return;
+  g('bt-edit-id').value=id;g('bt-asset').value=t.asset||'';g('bt-dt').value=t.date||today();
+  g('bt-dir').value=t.dir||'Long';g('bt-risk').value=t.risk||'';g('bt-result').value=t.result||'Win';
+  g('bt-r').value=t.r||'';g('bt-notes').value=t.notes||'';
+  g('modal-new-bt').querySelector('.modal-title').textContent='Edit Backtest Trade';
+  openModal('modal-new-bt');
+}
+function delBt(id){if(!confirm('Delete?'))return;BTA=BTA.filter(x=>x.id!==id);DB.save('bttrades',BTA);renderBtStats();renderBtTrades();toast('Deleted');}
+
+// ── EXPORT / CLEAR ──
+function exportCSV(){
+  if(!H.length){toast('No trades to export','error');return;}
+  const hd=['Date','Asset','Market','Direction','System','Entry','Stop','Exit','R Risk','R Result','Result','Rating','Thesis','Review'];
+  const rows=H.map(t=>[t.date,t.asset,t.market,t.dir,t.system,t.entry,t.stop,t.exit,t.risk,t.rResult,t.result,t.rating,`"${(t.thesis||'').replace(/"/g,'""')}"`,`"${(t.review||'').replace(/"/g,'""')}"`]);
+  const csv=[hd,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='traders-hub-'+today()+'.csv';a.click();toast('CSV exported');
+}
+function confirmClear(){
+  if(confirm('Clear ALL data? This cannot be undone.')){
+    LT=[];H=[];AN=[];ST=[];SY=[];SP=[];TARGETS=[];BTL=[];BTA=[];SI=[];IMGS={};THOUGHTS='';ACTIVE_BTL='';
+    ['live','history','analyses','studies','systems','spots','targets','btlogs','bttrades','sysideas','imgs','thoughts','activeBtl'].forEach(k=>DB.save(k,k==='imgs'?{}:k==='thoughts'?'':[]));
+    updateBadge();renderDash();toast('All data cleared');
+  }
+}
+
+// ── INIT ──
+updateBadge();renderDash();
+</script>
+</body>
+</html>
